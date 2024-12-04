@@ -1,0 +1,128 @@
+import crypto from "crypto";
+import UserModel, { IUser } from "@/model/auth/user.model";
+import VerificationTokenModel from "@/model/auth/verificationToken.model";
+
+import ApiResponse from "@/utils/ApiResponse";
+import ApiError from "@/utils/ApiError";
+import { asyncHandler } from "@/utils/asyncHandler";
+
+import { RequestHandler } from "express";
+import { env } from "@/config/env";
+import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
+import { cookiesOptions, HttpStatusCode } from "@/constant";
+import { EmailTemplate, mailService } from "@/services/email.service";
+import { ObjectId } from "mongoose";
+
+// handel both signup and login
+export const generateAuthLink: RequestHandler = asyncHandler(
+  async (req, res) => {
+    const { email } = req.body;
+
+    // find the user by email
+    let User = await UserModel.findOne({ email });
+
+    // if the user is not found then create a account for the user
+    if (!User) {
+      User = await UserModel.create({ email });
+    }
+
+    // remove the token
+    await VerificationTokenModel.findOneAndDelete({ user: User._id });
+
+    // token generation and assign to the user
+    const randomToken: string = crypto.randomBytes(36).toString("hex");
+    const verificationToken = await VerificationTokenModel.create({
+      user: User._id,
+      token: randomToken,
+    });
+
+    console.log("RandomToken", randomToken);
+
+    if (!verificationToken) {
+      throw new ApiError(500, "Token generation failed");
+    }
+
+    // Send verification email
+    const verificationUrl = `${env.SERVER_URL}/verify?userId=${verificationToken.token}`;
+    const emailTemplate = EmailTemplate.VerificationTemplate(verificationUrl);
+    await mailService.sendVerificatinMail({ email, res, emailTemplate });
+
+    res.status(200).json(
+      new ApiResponse(
+        201,
+        {
+          email: User.email,
+        },
+        "Verification link sent to your email , Please verify your email"
+      )
+    );
+  }
+);
+
+export const verifyAuthToken: RequestHandler = asyncHandler(
+  async (req, res) => {
+    let { userId } = req.query;
+
+    // Validate userId parameter
+    if (typeof userId !== "string") {
+      throw new ApiError(
+        HttpStatusCode.BadRequest,
+        "Invalid request: userId must be a string."
+      );
+    }
+
+    // Retrieve verification token and associated user
+    const verificationToken = await VerificationTokenModel.findOne({
+      token: userId,
+    }).populate<{ user: IUser }>("user");
+
+    // Check for token existence and valid associated user
+    if (!verificationToken || !verificationToken.user) {
+      throw new ApiError(
+        HttpStatusCode.BadRequest,
+        "Invalid or expired verification token."
+      );
+    }
+
+    const user = verificationToken.user;
+
+    // Check if the user exists in the database
+    const userExists = await UserModel.exists({ _id: user._id });
+    if (!userExists) {
+      throw new ApiError(HttpStatusCode.NotFound, "User not found.");
+    }
+
+    const isTokenValid = verificationToken.compareToken(userId);
+    if (!isTokenValid) {
+      throw new ApiError(
+        HttpStatusCode.BadRequest,
+        "Invalid request: Token mismatch."
+      );
+    }
+
+    // Mark the user as verified and save the user
+    user.isVerified = true;
+
+    // Execute saving user and removing token in parallel
+    await Promise.all([
+      user.save(),
+      VerificationTokenModel.findOneAndDelete({ user: user._id }),
+    ]);
+
+    // Generate new access and refresh tokens for the user
+    const { refreshToken, accessToken } =
+      await generateAccessTokenAndRefreshToken(user._id as ObjectId);
+
+    res
+      .status(HttpStatusCode.OK)
+      .cookie("accessToken", accessToken, cookiesOptions)
+      .cookie("refreshToken", refreshToken, cookiesOptions)
+      .json(
+        new ApiResponse(
+          HttpStatusCode.OK,
+          { accessToken: accessToken, refreshToken: refreshToken },
+          "User verified successfully."
+        )
+      );
+  }
+);

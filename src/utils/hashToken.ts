@@ -1,0 +1,6 @@
+import bcrypt from "bcrypt";
+
+export const hashToken = async (token: string): Promise<string> => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(token, salt);
+};

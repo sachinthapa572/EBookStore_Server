@@ -1,0 +1,41 @@
+import { env } from "@/config/env";
+import { cookiesOptions } from "@/constant";
+import ApiError from "@/utils/ApiError";
+import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
+import { RequestHandler } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
+  const accessToken: string | undefined =
+    req.cookies.accessToken ||
+    req.header("Authorization")?.replace(/^Bearer\s*/, "");
+  // x-refresh-token is used for the refresh token in the header
+  const refreshToken: string | undefined =
+    req.cookies.refreshToken || req.header("x-refresh-token");
+
+  // Check if access token is missing but refresh token exists
+  if (!accessToken && refreshToken) {
+    try {
+      const decodedToken = jwt.verify(
+        refreshToken,
+        env.REFRESH_TOKEN_SECRET
+      ) as JwtPayload;
+
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        await generateAccessTokenAndRefreshToken(decodedToken._id);
+
+      // Set the new accessToken and refreshToken in the response object
+      res
+        .cookie("accessToken", newAccessToken, cookiesOptions)
+        .cookie("refreshToken", newRefreshToken, cookiesOptions);
+
+      // Set the new accessToken in the request object
+      req.cookies.accessToken = newAccessToken;
+    } catch (error) {
+      throw new ApiError(401, "Unauthorized: Unable to refresh token");
+    }
+  }
+  next();
+};
+
+export default refreshTokenMiddleware;

@@ -19,6 +19,7 @@
     "noUnusedParameters": true,
     "strictFunctionTypes": true,
     "noImplicitReturns": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "sourceMap": true
   }
 }

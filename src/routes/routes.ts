@@ -1,17 +1,8 @@
-import { Router } from 'express';
-
+import { Router } from "express";
+import authRouter from "./AuthRoute/auth.route";
 
 const routes = Router();
 
-// routes.use('/admins', adminRouter);
-// routes.use('/teachers', teacherRouter);
-// routes.use('/students', studentRouter);
-
-// routes.use('/academic-year', academicYearRouter);
-// routes.use('/academic-term', academicTermRouter);
-// routes.use('/class-level', classLevelRouter);
-// routes.use('/program', programRouter);
-// routes.use('/course', subjectRouter);
-// routes.use('/exams', createExamRouter);
+routes.use("/auth", authRouter);
 
 export default routes;

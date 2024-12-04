@@ -1,15 +1,19 @@
 import mongoose from "mongoose";
 import { env } from "./env";
+import { DB_NAME } from "@/constant";
 
+const uri = `${env.MONGODB_URI}/${DB_NAME}`;
+if (!uri) {
+  console.error(
+    "Please define the MONGODB_URI environment variable inside .env"
+  );
+  process.exit(1);
+}
 
 export const dbConnect = async (): Promise<void> => {
   try {
-    const connectionInstance = await mongoose.connect(
-      `${env.MONGODB_URI}/${env.DB_NAME}`
-    );
-    console.log(
-      `MongoDB connected !! DB Host :${connectionInstance.connection.host} 👌`
-    );
+    await mongoose.connect(uri);
+    console.log(`MongoDB connected !!`);
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
     process.exit(1); // Exit process with failure

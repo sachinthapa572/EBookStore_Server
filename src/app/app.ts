@@ -1,8 +1,12 @@
-import { env } from "@/config/env";
 import cookieParser from "cookie-parser";
 import express from "express";
 import morgan from "morgan";
-
+// import "express-async-errors";
+import routes from "@/routes/routes";
+import {
+  globalErrHandler,
+  notFoundErr,
+} from "@/middlewares/globalErrHandler.middleware";
 
 const app: express.Application = express();
 
@@ -24,6 +28,10 @@ app.use(express.static("public"));
 
 //==> routes <==//
 
-console.log(env.PORT)
+app.use("/api/v1", routes);
+
+//==> error middleware <==//
+app.use(notFoundErr);
+app.use(globalErrHandler);
 
 export { app };
