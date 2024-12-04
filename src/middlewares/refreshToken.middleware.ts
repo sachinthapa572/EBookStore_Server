@@ -4,6 +4,7 @@ import ApiError from "@/utils/ApiError";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
 import { RequestHandler } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { ObjectId } from "mongoose";
 
 const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
   const accessToken: string | undefined =
@@ -19,7 +20,9 @@ const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
       const decodedToken = jwt.verify(
         refreshToken,
         env.REFRESH_TOKEN_SECRET
-      ) as JwtPayload;
+      ) as {
+        _id: ObjectId;
+      };
 
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
         await generateAccessTokenAndRefreshToken(decodedToken._id);

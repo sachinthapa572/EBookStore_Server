@@ -126,3 +126,28 @@ export const verifyAuthToken: RequestHandler = asyncHandler(
       );
   }
 );
+
+export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
+  const _id = req.userId;
+
+  const user = await UserModel.findById(_id).select("-refreshToken");
+  res
+    .status(HttpStatusCode.OK)
+    .json(
+      new ApiResponse(HttpStatusCode.OK, { user }, "User profile information.")
+    );
+});
+
+export const logout: RequestHandler = asyncHandler(async (_req, res) => {
+  res
+    .status(HttpStatusCode.OK)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .json(
+      new ApiResponse<null>(
+        HttpStatusCode.OK,
+        null,
+        "User logged out successfully."
+      )
+    );
+});

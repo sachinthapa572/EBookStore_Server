@@ -1,8 +1,9 @@
 import { env } from "@/config/env";
-import { Document, Model, model, Schema } from "mongoose";
+import { Document, Model, model, ObjectId, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 
 export interface IUser extends Document {
+  _id: ObjectId;
   username?: string;
   email: string;
   role: "user" | "author";

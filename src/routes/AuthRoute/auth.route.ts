@@ -1,5 +1,6 @@
 import {
   generateAuthLink,
+  ProfileInfo,
   verifyAuthToken,
 } from "@/controllers/auth.controller";
 import { validater } from "@/middlewares/validator.middlewares";
@@ -12,6 +13,8 @@ authRouter.post("/generate-link", validater(emailschema), generateAuthLink);
 
 authRouter.get("/verify", verifyAuthToken);
 
+authRouter.get("me", ProfileInfo);
 
+authRouter.get("/logout", logout);
 
 export default authRouter;
