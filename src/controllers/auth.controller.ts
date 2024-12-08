@@ -36,22 +36,21 @@ export const generateAuthLink: RequestHandler = asyncHandler(
       token: randomToken,
     });
 
-    console.log("RandomToken", randomToken);
-
     if (!verificationToken) {
       throw new ApiError(500, "Token generation failed");
     }
 
     // Send verification email
-    const verificationUrl = `${env.SERVER_URL}/verify?userId=${verificationToken.token}`;
-    const emailTemplate = EmailTemplate.VerificationTemplate(verificationUrl);
-    await mailService.sendVerificatinMail({ email, res, emailTemplate });
+    // const verificationUrl = `${env.SERVER_URL}/verify?userId=${verificationToken.token}`;
+    // const emailTemplate = EmailTemplate.VerificationTemplate(verificationUrl);
+    // await mailService.sendVerificatinMail({ email, res, emailTemplate });
 
     res.status(200).json(
       new ApiResponse(
         201,
         {
           email: User.email,
+          token: verificationToken.token,
         },
         "Verification link sent to your email , Please verify your email"
       )
@@ -59,9 +58,16 @@ export const generateAuthLink: RequestHandler = asyncHandler(
   }
 );
 
+// verify the user
 export const verifyAuthToken: RequestHandler = asyncHandler(
   async (req, res) => {
-    let { userId } = req.query;
+    let { userId } = req.query as { userId: string };
+    if (!userId) {
+      throw new ApiError(
+        HttpStatusCode.BadRequest,
+        "Invalid request: userId missing."
+      );
+    }
 
     // Validate userId parameter
     if (typeof userId !== "string") {
@@ -127,9 +133,13 @@ export const verifyAuthToken: RequestHandler = asyncHandler(
   }
 );
 
+// profile info of the user
 export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
   const _id = req.userId;
 
+  if (!_id) {
+    throw new ApiError(HttpStatusCode.Unauthorized, "Unauthorized request.");
+  }
   const user = await UserModel.findById(_id).select("-refreshToken");
   res
     .status(HttpStatusCode.OK)
@@ -138,6 +148,7 @@ export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
     );
 });
 
+// logout the user
 export const logout: RequestHandler = asyncHandler(async (_req, res) => {
   res
     .status(HttpStatusCode.OK)

@@ -16,7 +16,7 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
         .trim();
 
     if (!token || token === "undefined") {
-      throw new ApiError(401, "Unauthorized request: No token provided");
+      next(new ApiError(401, "Unauthorized request: No token provided"));
     }
 
     // Verify the token and decode the payload
@@ -28,7 +28,7 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     const _id = decodedToken?._id;
 
     if (!_id) {
-      throw new ApiError(401, "Unauthorized request: Invalid token");
+      next(new ApiError(401, "Unauthorized request: Invalid token"));
     }
 
     // Convert _id from string to ObjectId
@@ -36,10 +36,10 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     const user = await UserModel.findById(_id).select("-refreshToken");
 
     if (!user) {
-      throw new ApiError(401, "Unauthorized request: Invalid token");
+      next(new ApiError(401, "Unauthorized request: Invalid token"));
     }
 
-    req.userId = user._id; // Assign the userId to the request
+    req.userId = user?._id; // Assign the userId to the request
     next();
   } catch (error) {
     if (error instanceof Error) {

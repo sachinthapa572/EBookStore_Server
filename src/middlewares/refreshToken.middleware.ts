@@ -1,16 +1,18 @@
+import { RequestHandler } from "express";
+import jwt from "jsonwebtoken";
+import { ObjectId } from "mongoose";
+
 import { env } from "@/config/env";
 import { cookiesOptions } from "@/constant";
 import ApiError from "@/utils/ApiError";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
-import { RequestHandler } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { ObjectId } from "mongoose";
 
+
+// Middleware to refresh the access token if it is missing but refresh token exists
 const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
   const accessToken: string | undefined =
     req.cookies.accessToken ||
     req.header("Authorization")?.replace(/^Bearer\s*/, "");
-  // x-refresh-token is used for the refresh token in the header
   const refreshToken: string | undefined =
     req.cookies.refreshToken || req.header("x-refresh-token");
 

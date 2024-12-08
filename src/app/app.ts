@@ -7,6 +7,7 @@ import {
   globalErrHandler,
   notFoundErr,
 } from "@/middlewares/globalErrHandler.middleware";
+import refreshTokenMiddleware from "@/middlewares/refreshToken.middleware";
 
 const app: express.Application = express();
 
@@ -25,6 +26,8 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.static("public"));
+
+app.use(refreshTokenMiddleware);
 
 //==> routes <==//
 
