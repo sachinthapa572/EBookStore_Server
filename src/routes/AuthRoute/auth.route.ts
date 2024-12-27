@@ -2,11 +2,13 @@ import {
   generateAuthLink,
   logout,
   ProfileInfo,
+  updateProfile,
   verifyAuthToken,
 } from "@/controllers/auth.controller";
+import { fileParser } from "@/middlewares/file.middelware";
 import { isAuth } from "@/middlewares/isAuth.middleware";
 import { validater } from "@/middlewares/validator.middlewares";
-import { emailschema } from "@/validators/auth.validation";
+import { emailschema, newUserSchema } from "@/validators/auth.validation";
 import { Router } from "express";
 
 const authRouter = Router();
@@ -15,7 +17,11 @@ authRouter.post("/generate-link", validater(emailschema), generateAuthLink);
 
 authRouter.get("/verify", verifyAuthToken);
 
-authRouter.get("/me", isAuth, ProfileInfo);
+authRouter
+  .route("/profile")
+  .all(isAuth)
+  .get(ProfileInfo)
+  .post(fileParser, validater(newUserSchema), updateProfile);
 
 authRouter.get("/logout", isAuth, logout);
 

@@ -12,6 +12,7 @@ import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
 import { cookiesOptions, HttpStatusCode } from "@/constant";
 import { EmailTemplate, mailService } from "@/services/email.service";
 import { ObjectId } from "mongoose";
+import { formatUserProfile } from "@/utils/helper";
 
 // handel both signup and login
 export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
@@ -56,7 +57,9 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
   );
 });
 
+
 // verify the user
+// *yek choti herew milau ne hai yes ma redierct garne kura gare cha so check it
 export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
   let { userId } = req.query as { userId: string };
   if (!userId) {
@@ -118,9 +121,10 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
     );
 });
 
+
 // profile info of the user
 export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
-  const _id = req.userId;
+  const _id = req.user._id;
 
   if (!_id) {
     throw new ApiError(HttpStatusCode.Unauthorized, "Unauthorized request.");
@@ -131,6 +135,7 @@ export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
     .json(new ApiResponse(HttpStatusCode.OK, { user }, "User profile information."));
 });
 
+
 // logout the user
 export const logout: RequestHandler = asyncHandler(async (_req, res) => {
   res
@@ -138,4 +143,30 @@ export const logout: RequestHandler = asyncHandler(async (_req, res) => {
     .clearCookie("accessToken")
     .clearCookie("refreshToken")
     .json(new ApiResponse<null>(HttpStatusCode.OK, null, "User logged out successfully."));
+});
+
+
+
+export const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
+  const userInfo = await UserModel.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: { ...req.body, signedUp: true },
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!userInfo) {
+    throw new ApiError(HttpStatusCode.NotFound, "User not found.");
+  }
+
+  // if there is any file then upload the file and then upade the info into the databse
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, formatUserProfile(userInfo), "User profile updated successfully")
+    );
 });

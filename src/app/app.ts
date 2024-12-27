@@ -5,6 +5,7 @@ import { globalErrHandler, notFoundErr } from "@/middlewares/globalErrHandler.mi
 import refreshTokenMiddleware from "@/middlewares/refreshToken.middleware";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import { fileParser } from "@/middlewares/file.middelware";
 
 const app: express.Application = express();
 
@@ -30,6 +31,11 @@ app.use(refreshTokenMiddleware);
 //==> routes <==//
 
 app.use("/api/v1", routes);
+app.post("/api/v1/test", fileParser, (req, res) => {
+  console.log(req.body);
+  console.log(req.files);
+  res.send("Hello World");
+});
 
 //==> error middleware <==//
 app.use(notFoundErr);

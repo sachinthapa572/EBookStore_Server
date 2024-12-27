@@ -1,5 +1,5 @@
 import { Document, Model, model, Schema } from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 interface IVerificationToken extends Document {
   user: Schema.Types.ObjectId;

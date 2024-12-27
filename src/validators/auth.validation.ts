@@ -15,3 +15,13 @@ export const useridsechema = {
     invalid_type_error: "Invalid userId Types",
   }),
 };
+
+export const newUserSchema = {
+  name: z
+    .string({
+      required_error: "Name is required",
+      invalid_type_error: "Invalid Name Types",
+    })
+    .min(3, "Name must be at least 3 characters long")
+    .trim(),
+};

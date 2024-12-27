@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import { Document, Model, model, ObjectId, Schema } from "mongoose";
+import { Model, model, ObjectId, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 
 export interface IUser extends Document {
@@ -11,6 +11,12 @@ export interface IUser extends Document {
   createdAt?: Date;
   updatedAt?: Date;
   refreshToken?: string;
+  signedUp: Boolean;
+  avatar?: {
+    url: string;
+    id: string;
+  };
+  save: () => Promise<IUser>;
 }
 
 interface Methods {
@@ -30,6 +36,7 @@ const userSchema = new Schema<IUser, {}, Methods>(
       required: true,
       unique: true,
       trim: true,
+      index: true,
     },
 
     role: {
@@ -44,6 +51,21 @@ const userSchema = new Schema<IUser, {}, Methods>(
     refreshToken: {
       type: String,
     },
+    signedUp: {
+      type: Boolean,
+      default: false,
+    },
+    avatar: {
+      type: Object,
+      url: {
+        type: String,
+        default: "",
+      },
+      id: {
+        type: String,
+        default: "",
+      },
+    },
   },
   {
     timestamps: true,
@@ -55,6 +77,9 @@ userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,
+      email: this.email,
+      username: this.username,
+      role: this.role,
     },
     env.ACCESS_TOKEN_SECRET,
     {

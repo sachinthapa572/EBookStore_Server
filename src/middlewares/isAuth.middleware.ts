@@ -1,9 +1,10 @@
 import { env } from "@/config/env";
 import UserModel from "@/model/auth/user.model";
 import ApiError from "@/utils/ApiError";
-import { RequestHandler } from "express";
+import { formatUserProfile } from "@/utils/helper";
+import { Request, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import { ObjectId } from "mongodb"; // Import ObjectId for type checking
+
 
 // The middleware function to verify JWT
 const verifyJWT: RequestHandler = async (req, _res, next) => {
@@ -20,26 +21,23 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     }
 
     // Verify the token and decode the payload
-    const decodedToken = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as {
-      _id: ObjectId;
-    };
+    const decodedToken = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as Request["user"];
 
-    // Ensure the _id exists and is of type string before converting to ObjectId
-    const _id = decodedToken?._id;
-
-    if (_id && !_id) {
+    if (!decodedToken?._id) {
       next(new ApiError(401, "Unauthorized request: Invalid token"));
     }
 
     // Convert _id from string to ObjectId
 
-    const user = await UserModel.findById(_id).select("-refreshToken");
+    const user = await UserModel.findById({
+      _id: decodedToken._id,
+    });
 
-    if (!user) {
-      next(new ApiError(401, "Unauthorized request: Invalid token"));
+    if (user) {
+      req.user = formatUserProfile(user);
+    } else {
+      return next(new ApiError(401, "Unauthorized request: Invalid token"));
     }
-
-    req.userId = user?._id; // Assign the userId to the request
     next();
   } catch (error) {
     if (error instanceof Error) {
