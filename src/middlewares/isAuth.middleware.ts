@@ -27,7 +27,7 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     // Ensure the _id exists and is of type string before converting to ObjectId
     const _id = decodedToken?._id;
 
-    if (!_id) {
+      if (_id && !_id) {
       next(new ApiError(401, "Unauthorized request: Invalid token"));
     }
 

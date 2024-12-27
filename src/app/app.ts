@@ -1,13 +1,13 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import morgan from "morgan";
-// import "express-async-errors";
 import routes from "@/routes/routes";
 import {
   globalErrHandler,
   notFoundErr,
 } from "@/middlewares/globalErrHandler.middleware";
 import refreshTokenMiddleware from "@/middlewares/refreshToken.middleware";
+import helmet from "helmet";
 
 const app: express.Application = express();
 
@@ -26,6 +26,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.static("public"));
+app.use(helmet());
 
 app.use(refreshTokenMiddleware);
 

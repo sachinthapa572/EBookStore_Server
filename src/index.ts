@@ -1,7 +1,7 @@
-import http from "http";
 import { app } from "@/app/app";
 import { dbConnect } from "@/config/database";
 import { env } from "@/config/env";
+import http from "http";
 
 // server
 const PORT = env.PORT || 8001;

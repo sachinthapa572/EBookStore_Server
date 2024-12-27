@@ -41,9 +41,9 @@ export const generateAuthLink: RequestHandler = asyncHandler(
     }
 
     // Send verification email
-    // const verificationUrl = `${env.SERVER_URL}/verify?userId=${verificationToken.token}`;
-    // const emailTemplate = EmailTemplate.VerificationTemplate(verificationUrl);
-    // await mailService.sendVerificatinMail({ email, res, emailTemplate });
+    const verificationUrl = `${env.SERVER_URL}/verify?userId=${verificationToken.token}`;
+    const emailTemplate = EmailTemplate.VerificationTemplate(verificationUrl);
+    await mailService.sendVerificatinMail({ email, res, emailTemplate });
 
     res.status(200).json(
       new ApiResponse(
