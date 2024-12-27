@@ -27,7 +27,7 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     // Ensure the _id exists and is of type string before converting to ObjectId
     const _id = decodedToken?._id;
 
-      if (_id && !_id) {
+    if (_id && !_id) {
       next(new ApiError(401, "Unauthorized request: Invalid token"));
     }
 
@@ -43,15 +43,9 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     next();
   } catch (error) {
     if (error instanceof Error) {
-      if (
-        error.name === "JsonWebTokenError" ||
-        error.name === "TokenExpiredError"
-      ) {
+      if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
         return next(
-          new ApiError(
-            401,
-            "Unauthorized request: Invalid or expired access token"
-          )
+          new ApiError(401, "Unauthorized request: Invalid or expired access token")
         );
       }
       return next(new ApiError(500, "Internal Server Error"));

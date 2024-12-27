@@ -46,13 +46,6 @@ verificationTokenSchema.methods.compareToken = function (token) {
   return token === this.token;
 };
 
-const VerificationTokenModel = model(
-  "VerificationToken",
-  verificationTokenSchema
-);
+const VerificationTokenModel = model("VerificationToken", verificationTokenSchema);
 
-export default VerificationTokenModel as Model<
-  IVerificationToken,
-  {},
-  IHashToken
->;
+export default VerificationTokenModel as Model<IVerificationToken, {}, IHashToken>;

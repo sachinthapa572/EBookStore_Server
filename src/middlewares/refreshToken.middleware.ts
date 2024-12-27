@@ -7,22 +7,17 @@ import { cookiesOptions } from "@/constant";
 import ApiError from "@/utils/ApiError";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
 
-
 // Middleware to refresh the access token if it is missing but refresh token exists
 const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
   const accessToken: string | undefined =
-    req.cookies.accessToken ||
-    req.header("Authorization")?.replace(/^Bearer\s*/, "");
+    req.cookies.accessToken || req.header("Authorization")?.replace(/^Bearer\s*/, "");
   const refreshToken: string | undefined =
     req.cookies.refreshToken || req.header("x-refresh-token");
 
   // Check if access token is missing but refresh token exists
   if (!accessToken && refreshToken) {
     try {
-      const decodedToken = jwt.verify(
-        refreshToken,
-        env.REFRESH_TOKEN_SECRET
-      ) as {
+      const decodedToken = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET) as {
         _id: ObjectId;
       };
 

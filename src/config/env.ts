@@ -4,9 +4,7 @@ import { z } from "zod";
 // Define schema using zod
 const envSchema = z.object({
   // Application settings
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   PORT: z.string().transform(Number).default("3000"),
   MONGODB_URI: z.string({
     required_error: "MONGODB_URI is required",

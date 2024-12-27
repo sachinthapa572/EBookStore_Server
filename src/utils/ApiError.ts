@@ -9,11 +9,7 @@ class ApiError extends Error implements IApiError {
   readonly status: string;
   readonly message: string;
 
-  constructor(
-    statusCode: HttpStatusCode,
-    message?: string,
-    errors?: Array<string>
-  ) {
+  constructor(statusCode: HttpStatusCode, message?: string, errors?: Array<string>) {
     const errorMessage = message || statusMessages[statusCode];
     super(errorMessage);
 

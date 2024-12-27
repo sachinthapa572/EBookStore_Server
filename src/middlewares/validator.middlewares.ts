@@ -13,9 +13,7 @@ export const validater: IValidator = (obj) => {
         next();
       } else {
         const error = result.error.flatten().fieldErrors;
-        res
-          .status(422)
-          .json(new ApiResponse<typeof error>(422, error, "Validation Error"));
+        res.status(422).json(new ApiResponse<typeof error>(422, error, "Validation Error"));
       }
     } catch (error) {
       next(error);

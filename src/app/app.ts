@@ -1,13 +1,10 @@
-import cookieParser from "cookie-parser";
 import express from "express";
 import morgan from "morgan";
 import routes from "@/routes/routes";
-import {
-  globalErrHandler,
-  notFoundErr,
-} from "@/middlewares/globalErrHandler.middleware";
+import { globalErrHandler, notFoundErr } from "@/middlewares/globalErrHandler.middleware";
 import refreshTokenMiddleware from "@/middlewares/refreshToken.middleware";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 
 const app: express.Application = express();
 

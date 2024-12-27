@@ -26,4 +26,3 @@ export interface IApiError {
 export interface IValidator {
   <T extends ZodRawShape>(obj: T): RequestHandler;
 }
-
