@@ -1,6 +1,7 @@
 import { HttpStatusCode } from "@/constant";
+import { newAuthorSchema } from "@/validators/author.validation";
 import { RequestHandler, Response } from "express";
-import { ZodRawShape } from "zod";
+import { z } from "zod";
 
 export interface SendMailOptionsI {
   email: string;
@@ -23,6 +24,6 @@ export interface IApiError {
   status: string;
 }
 
-export interface IValidator {
-  <T extends ZodRawShape>(obj: T): RequestHandler;
-}
+type AuthorHandlerBody = z.infer<typeof newAuthorSchema>;
+
+export type RequestAuthorHandler = RequestHandler<{}, {}, AuthorHandlerBody>;

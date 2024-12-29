@@ -1,11 +1,11 @@
-import { IValidator } from "@/types";
 import ApiResponse from "@/utils/ApiResponse";
-import { z } from "zod";
+import { RequestHandler } from "express";
+import { ZodType } from "zod";
 
-export const validater: IValidator = (obj) => {
+export const validater = <T extends unknown>(schema: ZodType<T>): RequestHandler => {
   return async (req, res, next) => {
     try {
-      const schema = z.object(obj);
+      // const schema = z.object(obj);
       const result = schema.safeParse(req.body);
 
       if (result.success) {

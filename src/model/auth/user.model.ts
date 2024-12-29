@@ -11,12 +11,13 @@ export interface IUser extends Document {
   createdAt?: Date;
   updatedAt?: Date;
   refreshToken?: string;
-  signedUp: Boolean;
+  signedUp: boolean;
   avatar?: {
     url: string;
     id: string;
   };
   save: () => Promise<IUser>;
+  authorId?: ObjectId;
 }
 
 interface Methods {
@@ -54,6 +55,10 @@ const userSchema = new Schema<IUser, {}, Methods>(
     signedUp: {
       type: Boolean,
       default: false,
+    },
+    authorId: {
+      type: Schema.Types.ObjectId,
+      ref: "Author",
     },
     avatar: {
       type: Object,

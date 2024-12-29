@@ -7,5 +7,6 @@ export const formatUserProfile = (user: IUser): Request["user"] => {
     email: user.email,
     role: user.role,
     username: user.username,
+    signedUp: user.signedUp,
   };
 };

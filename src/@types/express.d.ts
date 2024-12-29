@@ -9,6 +9,7 @@ declare global {
         username?: string;
         email: string;
         role: "user" | "author";
+        signedUp: boolean;
       };
       // files?: { [key: string]: File | File[] };
       files: Record<string, File | File[]>;
