@@ -1,13 +1,13 @@
 import { createTransport } from "nodemailer";
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import { SendMailOptionsI } from "@/types";
 
 const transport = createTransport({
-  host: env.MAILTRAP_SMTP_HOST,
-  port: Number(env.MAILTRAP_SMTP_PORT),
+  host: appEnv.MAILTRAP_SMTP_HOST,
+  port: Number(appEnv.MAILTRAP_SMTP_PORT),
   auth: {
-    user: env.MAILTRAP_SMTP_USER,
-    pass: env.MAILTRAP_SMTP_PASS,
+    user: appEnv.MAILTRAP_SMTP_USER,
+    pass: appEnv.MAILTRAP_SMTP_PASS,
   },
 });
 
@@ -16,7 +16,7 @@ export const mailService = {
     try {
       await transport.sendMail({
         to: email,
-        from: env.VERIFICATION_EMAIL,
+        from: appEnv.VERIFICATION_EMAIL,
         subject: "Account Verification",
         html: emailTemplate,
       });

@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsnd --watch ./src --respawn -r tsconfig-paths/register --pretty --transpile-only ./src/index.ts",
+    "dev": "prettier --write . && tsnd --watch ./src --respawn -r tsconfig-paths/register --pretty --transpile-only ./src/index.ts",
     "build": "tsc && tsc-alias",
     "start": "node ./dist",
     "prettier": "prettier --write ."
@@ -19,6 +19,7 @@
   "description": " ",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",

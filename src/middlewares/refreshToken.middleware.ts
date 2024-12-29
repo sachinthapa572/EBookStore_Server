@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongoose";
 
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import { cookiesOptions } from "@/constant";
 import ApiError from "@/utils/ApiError";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
@@ -17,7 +17,7 @@ const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
   // Check if access token is missing but refresh token exists
   if (!accessToken && refreshToken) {
     try {
-      const decodedToken = jwt.verify(refreshToken, env.REFRESH_TOKEN_SECRET) as {
+      const decodedToken = jwt.verify(refreshToken, appEnv.REFRESH_TOKEN_SECRET) as {
         _id: ObjectId;
       };
 
@@ -32,7 +32,7 @@ const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
       // Set the new accessToken in the request object
       req.cookies.accessToken = newAccessToken;
     } catch (error) {
-      throw new ApiError(401, "Unauthorized: Unable to refresh token");
+      next(new ApiError(401, "Unauthorized: Unable to refresh token"));
     }
   }
   next();

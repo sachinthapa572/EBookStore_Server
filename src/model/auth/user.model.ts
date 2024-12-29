@@ -1,8 +1,8 @@
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import { Model, model, ObjectId, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 
-export interface IUser extends Document {
+export interface userDoc {
   _id: ObjectId;
   username?: string;
   email: string;
@@ -16,7 +16,7 @@ export interface IUser extends Document {
     url: string;
     id: string;
   };
-  save: () => Promise<IUser>;
+  save: () => Promise<userDoc>;
   authorId?: ObjectId;
 }
 
@@ -25,11 +25,10 @@ interface Methods {
   generateRefreshToken: () => string;
 }
 
-const userSchema = new Schema<IUser, {}, Methods>(
+const userSchema = new Schema<userDoc, {}, Methods>(
   {
     username: {
       type: String,
-      // required: true,
       trim: true,
     },
     email: {
@@ -86,9 +85,9 @@ userSchema.methods.generateAccessToken = function () {
       username: this.username,
       role: this.role,
     },
-    env.ACCESS_TOKEN_SECRET,
+    appEnv.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: env.ACCESS_TOKEN_EXPIRY,
+      expiresIn: appEnv.ACCESS_TOKEN_EXPIRY,
     }
   );
 };
@@ -100,13 +99,13 @@ userSchema.methods.generateRefreshToken = function () {
       username: this.username,
       role: this.role,
     },
-    env.REFRESH_TOKEN_SECRET,
+    appEnv.REFRESH_TOKEN_SECRET,
     {
-      expiresIn: env.REFRESH_TOKEN_EXPIRY,
+      expiresIn: appEnv.REFRESH_TOKEN_EXPIRY,
     }
   );
 };
 
 const UserModel = model("User", userSchema);
 
-export default UserModel as Model<IUser, {}, Methods>;
+export default UserModel as Model<userDoc, {}, Methods>;

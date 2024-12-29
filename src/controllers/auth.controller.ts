@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import UserModel, { IUser } from "@/model/auth/user.model";
+import UserModel, { userDoc } from "@/model/auth/user.model";
 import VerificationTokenModel from "@/model/auth/verificationToken.model";
 
 import ApiResponse from "@/utils/ApiResponse";
@@ -7,12 +7,13 @@ import ApiError from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 
 import { RequestHandler } from "express";
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
 import { cookiesOptions, HttpStatusCode } from "@/constant";
 import { EmailTemplate, mailService } from "@/services/email.service";
 import { ObjectId } from "mongoose";
 import { formatUserProfile } from "@/utils/helper";
+import { updateAvatarToCloudinary } from "@/utils/fileUpload";
 
 // handel both signup and login
 export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
@@ -41,13 +42,18 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
   }
 
   // Send verification email
-  const verificationUrl = `${env.SERVER_URL}/verify?userId=${verificationToken.token}`;
-  const emailTemplate = EmailTemplate.VerificationTemplate(verificationUrl);
-  await mailService.sendVerificatinMail({ email, res, emailTemplate });
+  const emailTemplate = EmailTemplate.VerificationTemplate(
+    `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`
+  );
+  try {
+    await mailService.sendVerificatinMail({ email, res, emailTemplate });
+  } catch (error) {
+    throw new ApiError(500, "Failed to send verification email");
+  }
 
   res.status(200).json(
     new ApiResponse(
-      201,
+      200,
       {
         email: User.email,
         token: verificationToken.token,
@@ -56,7 +62,6 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
     )
   );
 });
-
 
 // verify the user
 // *yek choti herew milau ne hai yes ma redierct garne kura gare cha so check it
@@ -74,7 +79,7 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
   // Retrieve verification token and associated user
   const verificationToken = await VerificationTokenModel.findOne({
     token: userId,
-  }).populate<{ user: IUser }>("user");
+  }).populate<{ user: userDoc }>("user");
 
   // Check for token existence and valid associated user
   if (!verificationToken || !verificationToken.user) {
@@ -109,46 +114,26 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
   );
 
   res
-    .status(HttpStatusCode.OK)
     .cookie("accessToken", accessToken, cookiesOptions)
     .cookie("refreshToken", refreshToken, cookiesOptions)
-    .json(
-      new ApiResponse(
-        HttpStatusCode.OK,
-        { accessToken: accessToken, refreshToken: refreshToken },
-        "User verified successfully."
-      )
-    );
-});
+    .json(new ApiResponse(HttpStatusCode.OK, { profile: formatUserProfile(user) }));
 
+  // Redirect to the success URL
+  // res.redirect(`${env.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`);
+});
 
 // profile info of the user
 export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
-  const _id = req.user._id;
-
-  if (!_id) {
-    throw new ApiError(HttpStatusCode.Unauthorized, "Unauthorized request.");
-  }
-  const user = await UserModel.findById(_id).select("-refreshToken");
-  res
-    .status(HttpStatusCode.OK)
-    .json(new ApiResponse(HttpStatusCode.OK, { user }, "User profile information."));
+  res.status(200).json(new ApiResponse(HttpStatusCode.OK, { profile: req.user }));
 });
-
 
 // logout the user
 export const logout: RequestHandler = asyncHandler(async (_req, res) => {
-  res
-    .status(HttpStatusCode.OK)
-    .clearCookie("accessToken")
-    .clearCookie("refreshToken")
-    .json(new ApiResponse<null>(HttpStatusCode.OK, null, "User logged out successfully."));
+  res.clearCookie("accessToken").clearCookie("refreshToken").send();
 });
 
-
-
 export const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
-  const userInfo = await UserModel.findByIdAndUpdate(
+  const user = await UserModel.findByIdAndUpdate(
     req.user._id,
     {
       $set: { ...req.body, signedUp: true },
@@ -158,15 +143,19 @@ export const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
     }
   );
 
-  if (!userInfo) {
+  if (!user) {
     throw new ApiError(HttpStatusCode.NotFound, "User not found.");
   }
 
-  // if there is any file then upload the file and then upade the info into the databse
+  if (req.files && req.files.avatar && !Array.isArray(req.files.avatar)) {
+    const file = req.files.avatar;
+    // if you are using cloudinary this is the method you should use
+    user.avatar = await updateAvatarToCloudinary(file, user.avatar?.id);
 
-  res
-    .status(200)
-    .json(
-      new ApiResponse(200, formatUserProfile(userInfo), "User profile updated successfully")
-    );
+    await user.save();
+  }
+
+  res.json(
+    new ApiResponse(200, { profile: formatUserProfile(user) }, "Profile updated successfully")
+  );
 });

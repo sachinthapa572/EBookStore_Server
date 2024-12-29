@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { env } from "./env";
+import { appEnv } from "./env";
 import { DB_NAME } from "@/constant";
 
-const uri = `${env.MONGODB_URI}/${DB_NAME}`;
+const uri = `${appEnv.MONGODB_URI}/${DB_NAME}`;
 if (!uri) {
   console.error("Please define the MONGODB_URI environment variable inside .env");
   process.exit(1);

@@ -1,4 +1,4 @@
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import ApiError from "@/utils/ApiError";
 import { ErrorRequestHandler, RequestHandler } from "express";
 
@@ -17,7 +17,7 @@ const globalErrHandler: ErrorRequestHandler = (err, _req, res, _) => {
     message: err.message,
     success: err.success,
     errors: err.errors,
-    stack: env.NODE_ENV === "production" ? undefined : err.stack,
+    stack: appEnv.NODE_ENV === "production" ? undefined : err.stack,
   });
 };
 

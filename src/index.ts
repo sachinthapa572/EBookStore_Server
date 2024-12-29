@@ -1,10 +1,10 @@
 import { app } from "@/app/app";
 import { dbConnect } from "@/config/database";
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import http from "http";
 
 // server
-const PORT = env.PORT || 8001;
+const PORT = appEnv.PORT || 8001;
 
 const server = http.createServer(app);
 

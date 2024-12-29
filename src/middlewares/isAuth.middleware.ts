@@ -1,10 +1,9 @@
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import UserModel from "@/model/auth/user.model";
 import ApiError from "@/utils/ApiError";
 import { formatUserProfile } from "@/utils/helper";
 import { Request, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-
 
 // The middleware function to verify JWT
 const verifyJWT: RequestHandler = async (req, _res, next) => {
@@ -21,7 +20,7 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     }
 
     // Verify the token and decode the payload
-    const decodedToken = jwt.verify(token, env.ACCESS_TOKEN_SECRET) as Request["user"];
+    const decodedToken = jwt.verify(token, appEnv.ACCESS_TOKEN_SECRET) as Request["user"];
 
     if (!decodedToken?._id) {
       next(new ApiError(401, "Unauthorized request: Invalid token"));
@@ -32,6 +31,8 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     const user = await UserModel.findById({
       _id: decodedToken._id,
     });
+
+    console.log("user", user?.role);
 
     if (user) {
       req.user = formatUserProfile(user);

@@ -17,7 +17,7 @@ export const useridsechema = z.object({
 });
 
 export const newUserSchema = z.object({
-  name: z
+  username: z
     .string({
       required_error: "Name is required",
       invalid_type_error: "Invalid Name Types",

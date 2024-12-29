@@ -1,4 +1,4 @@
-import { env } from "@/config/env";
+import { appEnv } from "@/config/env";
 import { HttpStatusCode, statusMessages } from "@/constant";
 import { IApiError } from "@/types";
 
@@ -19,7 +19,7 @@ class ApiError extends Error implements IApiError {
     this.message = errorMessage;
 
     // Conditionally capture the stack trace based on the environment (development only)
-    if (env.NODE_ENV === "development") {
+    if (appEnv.NODE_ENV === "development") {
       Error.captureStackTrace(this, this.constructor);
     } else {
       this.stack = undefined;

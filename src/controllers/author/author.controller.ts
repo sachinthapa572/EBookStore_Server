@@ -17,22 +17,27 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res, _next
     );
   }
 
+  if (user.role === "author") {
+    throw new ApiError(HttpStatusCode.Forbidden, "User is already an author ");
+  }
+
   const newAuthor = new AuthorModel({
     name: body.name,
-    about: body.name,
+    about: body.about,
     userId: user._id,
-    socialLinks: body.name,
+    socialLinks: body.socialLinks,
   });
 
   const uniqueSlug = slugify(`${newAuthor.name}${newAuthor._id}`, {
     lower: true,
     replacement: "-",
   });
+  console.log("uniqueSlug", uniqueSlug);
 
   newAuthor.slug = uniqueSlug;
   await newAuthor.save();
 
-  UserModel.findByIdAndUpdate(user._id, {
+  await UserModel.findByIdAndUpdate(user._id, {
     role: "author",
     authorId: newAuthor._id,
   });
@@ -42,6 +47,10 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res, _next
 
 export const getAuthorDetails: RequestHandler = asyncHandler(async (req, res) => {
   const authorslug = req.params.slug;
+
+  if (!authorslug) {
+    throw new ApiError(400, "Author slug is missing ");
+  }
 
   const author = await AuthorModel.findOne({ slug: authorslug });
   if (!author) {

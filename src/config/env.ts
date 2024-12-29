@@ -12,6 +12,9 @@ const envSchema = z.object({
   SERVER_URL: z.string({
     required_error: "SERVER_URL is required",
   }),
+  AUTH_SUCCESS_URL: z.string({
+    required_error: "AUTH_SUCCESS_URL is required",
+  }),
   VERIFICATION_EMAIL: z
     .string({
       required_error: "VERIFICATION_EMAIL is required",
@@ -42,6 +45,17 @@ const envSchema = z.object({
   MAILTRAP_SMTP_PASS: z.string({
     required_error: "MAILTRAP_SMTP_PASS is required",
   }),
+
+  // Cloudinary settings
+  CLOUDINARY_NAME: z.string({
+    required_error: "CLOUD_NAME is required",
+  }),
+  CLOUDINARY_API_KEY: z.string({
+    required_error: "CLOUD_API_KEY is required",
+  }),
+  CLOUDINARY_API_SECRET: z.string({
+    required_error: "CLOUD_API_SECRET is required",
+  }),
 });
 
 // Parse and validate environment variables
@@ -53,4 +67,4 @@ if (!parsedEnv.success) {
   process.exit(1);
 }
 
-export const env = parsedEnv.data;
+export const appEnv = parsedEnv.data;
