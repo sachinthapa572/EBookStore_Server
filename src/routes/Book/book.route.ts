@@ -1,0 +1,15 @@
+import { createNewBook } from "@/controllers/book/book.controller";
+import { fileParser } from "@/middlewares/file.middelware";
+import { isAuth } from "@/middlewares/isAuth.middleware";
+import { isAuthor } from "@/middlewares/isAuthor.middleware";
+import { validater } from "@/middlewares/validator.middlewares";
+import { newBookSchema } from "@/validators/book/book.validation";
+import { Router } from "express";
+
+const bookRotuer = Router();
+
+bookRotuer.use(isAuth, isAuthor);
+
+bookRotuer.post("/create", fileParser, validater(newBookSchema), createNewBook);
+
+export default bookRotuer;

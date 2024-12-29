@@ -1,3 +1,5 @@
+import path from "path";
+
 export const DB_NAME: string = "E-BookStore";
 
 // Api error class HttpStatusCode enum
@@ -26,3 +28,7 @@ export const cookiesOptions = {
   httpOnly: true,
   secure: true,
 };
+
+export const publicPath = path.join(__dirname, "../../public/books");
+
+export const bookstoragePath = path.resolve(__dirname, "../public/books");

@@ -6,6 +6,9 @@ import refreshTokenMiddleware from "@/middlewares/refreshToken.middleware";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { fileParser } from "@/middlewares/file.middelware";
+import path from "path";
+import formidable from "formidable";
+import { publicPath } from "@/constant";
 
 const app: express.Application = express();
 
@@ -23,7 +26,7 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.static("public"));
+app.use("/books", express.static(publicPath)); //localhost:3000/books/fileName
 app.use(helmet());
 
 app.use(refreshTokenMiddleware);
@@ -31,9 +34,21 @@ app.use(refreshTokenMiddleware);
 //==> routes <==//
 
 app.use("/api/v1", routes);
-app.post("/api/v1/test", fileParser, (req, res) => {
-  console.log(req.body);
-  console.log(req.files);
+
+// uplode file to server
+app.post("/api/v1/test", async (req, res) => {
+  const form = formidable({
+    uploadDir: path.resolve(__dirname, "../../public/books"),
+    filename(name, ext, _part, _form) {
+      console.log("name", name);
+      console.log("ext", ext);
+      return `${name}kk${ext}`;
+    },
+    keepExtensions: true,
+  });
+
+  await form.parse(req);
+
   res.send("Hello World");
 });
 

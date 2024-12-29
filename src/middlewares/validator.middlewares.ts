@@ -1,8 +1,8 @@
 import ApiResponse from "@/utils/ApiResponse";
 import { RequestHandler } from "express";
-import { ZodType } from "zod";
+import { ZodObject, ZodRawShape } from "zod";
 
-export const validater = <T extends unknown>(schema: ZodType<T>): RequestHandler => {
+export const validater = <T extends ZodRawShape>(schema: ZodObject<T>): RequestHandler => {
   return async (req, res, next) => {
     try {
       // const schema = z.object(obj);

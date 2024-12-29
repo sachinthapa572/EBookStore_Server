@@ -17,9 +17,9 @@ export interface BookDoc {
     id: string;
     url: string;
   };
-  fileinfo: {
+  fileInfo: {
     id: string;
-    url: string;
+    size: string;
   };
 }
 
@@ -79,7 +79,7 @@ const bookSchema = new Schema<BookDoc>({
     url: String,
     id: String,
   },
-  fileinfo: {
+  fileInfo: {
     type: Object,
     required: true,
     url: {
