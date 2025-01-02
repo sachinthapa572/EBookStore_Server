@@ -1,51 +1,55 @@
 import { z } from "zod";
 
-export const newBookSchema = z.object({
+const commonBookSchema = {
   title: z
     .string({
-      required_error: "Title is missing!",
-      invalid_type_error: "Invalid title!",
+      required_error: "Please provide a title for the book.",
+      invalid_type_error: "The title must be a text value.",
     })
     .trim(),
   description: z
     .string({
-      required_error: "Description is missing!",
-      invalid_type_error: "Invalid Description!",
+      required_error: "Please provide a description for the book.",
+      invalid_type_error: "The description must be a text value.",
     })
     .trim(),
   language: z
     .string({
-      required_error: "Language is missing!",
-      invalid_type_error: "Invalid language!",
+      required_error: "Please specify the language of the book.",
+      invalid_type_error: "The language must be a text value.",
     })
     .trim(),
-
-  publishedAt: z.coerce.date({
-    required_error: "Publish date is missing!",
-    invalid_type_error: "Invalid publish date!",
-  }),
+  publishedAt: z.coerce
+    .date()
+    .refine(
+      (date) => date <= new Date(),
+      "The publish date cannot be in the future. Please provide a valid date."
+    ),
   publicationName: z
     .string({
-      required_error: "Publication name is missing!",
-      invalid_type_error: "Invalid publication name!",
+      required_error: "Please provide the name of the publication.",
+      invalid_type_error: "The publication name must be a text value.",
     })
     .trim(),
   genre: z
     .string({
-      required_error: "Genre is missing!",
-      invalid_type_error: "Invalid genre!",
+      required_error: "Please specify the genre of the book.",
+      invalid_type_error: "The genre must be a text value.",
     })
     .trim(),
   price: z
     .string({
-      required_error: "Price is missing!",
-      invalid_type_error: "Invalid price!",
+      required_error: "Please provide the price details as a JSON string.",
+      invalid_type_error: "The price must be a valid JSON string.",
     })
     .transform((value, ctx) => {
       try {
         return JSON.parse(value);
       } catch (error) {
-        ctx.addIssue({ code: "custom", message: "Invalid Price Data!" });
+        ctx.addIssue({
+          code: "custom",
+          message: "The price data is invalid. Please provide it as a valid JSON string.",
+        });
         return z.NEVER;
       }
     })
@@ -53,55 +57,83 @@ export const newBookSchema = z.object({
       z.object({
         mrp: z
           .number({
-            required_error: "MRP is missing!",
-            invalid_type_error: "Invalid mrp price!",
+            required_error: "Please specify the MRP of the book.",
+            invalid_type_error: "The MRP must be a numeric value.",
           })
-          .nonnegative("Invalid mrp!"),
+          .nonnegative("The MRP must be a non-negative value."),
         sale: z
           .number({
-            required_error: "Sale price is missing!",
-            invalid_type_error: "Invalid sale price!",
+            required_error: "Please specify the sale price of the book.",
+            invalid_type_error: "The sale price must be a numeric value.",
           })
-          .nonnegative("Invalid sale price!"),
+          .nonnegative("The sale price must be a non-negative value."),
       })
     )
-    // if the validator function returns false the error will be thrown
-    .refine((price) => price.sale <= price.mrp, "Sale price should be less then mrp!"),
-  fileInfo: z
-    .string({
-      required_error: "File info is missing!",
-      invalid_type_error: "Invalid file info!",
-    })
-    .transform((value, ctx) => {
-      try {
-        return JSON.parse(value);
-      } catch (error) {
-        ctx.addIssue({ code: "custom", message: "Invalid File Info!" });
-        return z.NEVER;
-      }
-    })
-    .pipe(
-      z.object({
-        name: z
-          .string({
-            required_error: "fileInfo.name is missing!",
-            invalid_type_error: "Invalid fileInfo.name!",
-          })
-          .trim(),
-        type: z
-          .string({
-            required_error: "fileInfo.type is missing!",
-            invalid_type_error: "Invalid fileInfo.type!",
-          })
-          .trim(),
-        size: z
-          .number({
-            required_error: "fileInfo.size is missing!",
-            invalid_type_error: "Invalid fileInfo.size!",
-          })
-          .nonnegative("Invalid fileInfo.size!"),
-      })
+    .refine(
+      (price) => price.sale <= price.mrp,
+      "The sale price must be less than or equal to the MRP. Please provide valid pricing."
     ),
+};
+
+const fileInfo = z
+  .string({
+    required_error: "File information is required. Please provide it as a JSON string.",
+    invalid_type_error: "File information must be a valid JSON string.",
+  })
+  .transform((value, ctx) => {
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "The file information provided is invalid. Ensure it is a well-formed JSON string.",
+      });
+      return z.NEVER;
+    }
+  })
+  .pipe(
+    z.object({
+      name: z
+        .string({
+          required_error: "File name is required. Please specify the name of the file.",
+          invalid_type_error: "The file name must be a text value.",
+        })
+        .trim(),
+      type: z
+        .string({
+          required_error:
+            "File type is required. Please specify the type of the file (e.g., 'image/png').",
+          invalid_type_error: "The file type must be a text value.",
+        })
+        .trim(),
+      size: z
+        .number({
+          required_error:
+            "File size is required. Please specify the size of the file in bytes.",
+          invalid_type_error: "The file size must be a numeric value.",
+        })
+        .nonnegative("The file size must be a non-negative number."),
+    })
+  );
+
+export const newBookSchema = z.object({
+  ...commonBookSchema,
+  fileInfo,
+});
+
+const makeFieldsOptional = (schema: Record<string, z.ZodTypeAny>) => {
+  return Object.fromEntries(
+    Object.entries(schema).map(([key, value]) => [key, value.optional()])
+  );
+};
+
+export const updateBookSchema = z.object({
+  ...makeFieldsOptional(commonBookSchema),
+  slug: z.string({
+    message: "Invalid slug!",
+  }),
+  fileInfo: fileInfo.optional(),
 });
 
 // coresce.date will try to convert the value to date if it is not a date it will throw an error
