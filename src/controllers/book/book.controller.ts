@@ -4,9 +4,16 @@ import BookModel, { BookDoc } from "@/model/Book/book.model";
 import { CreateBookRequestHandler } from "@/types";
 import ApiError from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
-import { uploadBookTolocalDir, uploadCoverToCloudinary } from "@/utils/fileUpload";
+import {
+  uploadBookTolocalDir,
+  // @ts-ignore
+  uploadCoverToCloudinary,
+  uploadImageTolocalDir,
+} from "@/utils/fileUpload";
 import { formatFileSize } from "@/utils/helper";
 import AuthorModel from "@/model/auth/author.model";
+import ApiResponse from "@/utils/ApiResponse";
+import logger from "@/logger/winston.logger";
 
 const createNewBook: CreateBookRequestHandler = asyncHandler(async (req, res) => {
   const { body, files, user } = req;
@@ -46,7 +53,13 @@ const createNewBook: CreateBookRequestHandler = asyncHandler(async (req, res) =>
   });
 
   if (cover && !Array.isArray(cover)) {
-    newBook.cover = await uploadCoverToCloudinary(cover, user.email);
+    // newBook.cover = await uploadCoverToCloudinary(cover, user.email);
+    // console.log("existence", ;
+    newBook.cover = await uploadImageTolocalDir(
+      cover,
+      newBook.slug,
+      cover.originalFilename?.split(".")[1]!
+    );
   }
 
   if (!book || Array.isArray(book) || book.mimetype !== "application/epub+zip") {
@@ -63,12 +76,19 @@ const createNewBook: CreateBookRequestHandler = asyncHandler(async (req, res) =>
   newBook.fileInfo.id = uniqueFileName;
 
   await AuthorModel.findByIdAndUpdate(user.authorId, {
-    $push: { books: newBook._id },
+    $addToSet: { books: newBook._id },
   });
-
-  await newBook.save();
-
-  res.status(200).json({ message: "Book created successfully" });
+  const Book = await newBook.save();
+  const bookObject = Book.toObject();
+  const NewBook = {
+    ...bookObject,
+    fileInfo: {
+      ...bookObject.fileInfo,
+      id: `http://localhost:3000/public/books/${bookObject.fileInfo.id}`,
+    },
+  };
+  logger.info(`New Book created successfully ${NewBook.title}`);
+  res.status(201).json(new ApiResponse(200, { NewBook }, "New Book created successfully"));
 });
 
 export { createNewBook };

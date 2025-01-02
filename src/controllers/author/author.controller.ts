@@ -32,7 +32,6 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res, _next
     lower: true,
     replacement: "-",
   });
-  console.log("uniqueSlug", uniqueSlug);
 
   newAuthor.slug = uniqueSlug;
   await newAuthor.save();
@@ -42,7 +41,15 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res, _next
     authorId: newAuthor._id,
   });
 
-  res.status(200).json(new ApiResponse(201, "Thanks for the registring as an author "));
+  res.status(200).json(
+    new ApiResponse(
+      201,
+      {
+        slug: newAuthor.slug,
+      },
+      "Thanks for the registring as an author "
+    )
+  );
 });
 
 export const getAuthorDetails: RequestHandler = asyncHandler(async (req, res) => {

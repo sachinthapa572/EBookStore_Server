@@ -56,7 +56,7 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
       200,
       {
         email: User.email,
-        token: verificationToken.token,
+        link: `http://localhost:3000/api/v1/auth/verify?userId=${verificationToken.token}`,
       },
       "Verification link sent to your email , Please verify your email"
     )

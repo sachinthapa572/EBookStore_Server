@@ -1,5 +1,5 @@
 import cloudinary from "@/cloud/cloudinary";
-import { bookstoragePath } from "@/constant";
+import { bookstoragePath, photoStoragePath } from "@/constant";
 import { File } from "formidable";
 import fs from "fs";
 import path from "path";
@@ -45,8 +45,27 @@ export const uploadBookTolocalDir = async (file: File, uniqueFileName: string) =
 
   const filePath = path.resolve(bookstoragePath, uniqueFileName);
 
-  // this requires the buffer as the second argument so we convert the file to buffer using the readFileSync
-
+  // Convert the file to buffer using readFileSync and write it to the local directory as writeFileSync only accepts buffer file
   fs.writeFileSync(filePath, fs.readFileSync(file.filepath));
 };
+export const uploadImageTolocalDir = async (
+  file: File,
+  uniqueFileName: string,
+  extension: string
+) => {
+  if (!fs.existsSync(photoStoragePath)) {
+    fs.mkdirSync(photoStoragePath, { recursive: true });
+  }
+
+  const filePath = path.resolve(photoStoragePath, `${uniqueFileName}.${extension}`);
+
+  // Convert the file to buffer using readFileSync and write it to the local directory as writeFileSync only accepts buffer file
+  fs.writeFileSync(filePath, fs.readFileSync(file.filepath));
+
+  return {
+    id: uniqueFileName,
+    url: `http://localhost:3000/public/photos/${uniqueFileName}.${extension}`,
+  };
+};
+
 // c_thumb,g_auto,h_800,w_800/co_rgb:921919,l_text:times%20new%20roman_300_bold_normal_left:S/fl_layer_apply,g_south_east/f8uxwzs9pyigbyjgffja

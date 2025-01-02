@@ -1,4 +1,8 @@
 import path from "path";
+import { appEnv } from "./config/env";
+import ApiError from "./utils/ApiError";
+import { v4 as uuidv4 } from "uuid";
+import rateLimit from "express-rate-limit";
 
 export const DB_NAME: string = "E-BookStore";
 
@@ -29,6 +33,28 @@ export const cookiesOptions = {
   secure: true,
 };
 
-export const publicPath = path.join(__dirname, "../../public/books");
-
 export const bookstoragePath = path.resolve(__dirname, "../public/books");
+export const photoStoragePath = path.resolve(__dirname, "../public/photos");
+
+export const corsOptions = {
+  origin: appEnv.CORS_ORIGIN === "*" ? "*" : process.env.CORS_ORIGIN?.split(","),
+  credentials: true,
+};
+
+export const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5000, // Limit each IP to 500 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: (req, _res) => {
+    return req.clientIp || uuidv4(); // IP address from requestIp.mw(), as opposed to req.ip
+  },
+  handler: (_, __, ___, options) => {
+    throw new ApiError(
+      options.statusCode || 500,
+      `There are too many requests. You are only allowed ${
+        options.max
+      } requests per ${options.windowMs / 60000} minutes`
+    );
+  },
+});
