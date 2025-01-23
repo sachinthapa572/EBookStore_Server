@@ -6,6 +6,7 @@ import ApiError from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 import {
   deleteFileFromLocalDir,
+  // @ts-ignore
   removefromCloudinary,
   uploadBookTolocalDir,
   // @ts-ignore
@@ -100,7 +101,7 @@ const updateBookDetails: customReqHandler<updateBookType> = asyncHandler(async (
     title,
     description,
     price,
-    fileInfo,
+    // fileInfo,
     genre,
     language,
     publicationName,
@@ -189,5 +190,8 @@ const updateBookDetails: customReqHandler<updateBookType> = asyncHandler(async (
   logger.info(`Book Updated successfully ${NewBook.title}`);
   res.status(201).json(new ApiResponse(200, { NewBook }, "Book Updated successfully"));
 });
+
+// delete book controller
+// check if the book is already purchased by a user then dont allow to delete the boook
 
 export { createNewBook, updateBookDetails };

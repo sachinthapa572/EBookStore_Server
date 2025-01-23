@@ -1,6 +1,8 @@
 import { appEnv } from "@/config/env";
 import UserModel from "@/model/auth/user.model";
+import { customReqHandler, newReviewType } from "@/types";
 import ApiError from "@/utils/ApiError";
+import { asyncHandler } from "@/utils/asyncHandler";
 import { formatUserProfile } from "@/utils/helper";
 import { Request, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
@@ -54,5 +56,19 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     return next(new ApiError(500, "Internal Server Error"));
   }
 };
+
+export const isPurchaseByTheUser: customReqHandler<newReviewType> = asyncHandler(
+  async (req, _res, next) => {
+    const userDoc = await UserModel.findOne({
+      _id: req.user._id,
+      books: req.body.bookId,
+    });
+
+    if (!userDoc) {
+      return next(new ApiError(403, "Forbidden request: You have not purchased this book"));
+    }
+    next();
+  }
+);
 
 export { verifyJWT as isAuth };

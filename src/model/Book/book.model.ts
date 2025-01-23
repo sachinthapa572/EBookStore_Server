@@ -30,42 +30,41 @@ const bookSchema = new Schema<BookDoc>({
   },
   title: {
     type: String,
-    required: true,
+
     trim: true,
   },
   slug: {
     type: String,
-    required: true,
+
     trim: true,
     unique: true,
   },
   description: {
     type: String,
-    required: true,
+
     trim: true,
   },
   language: {
     type: String,
-    required: true,
+
     trim: true,
   },
   publicationName: {
     type: String,
-    required: true,
+
     trim: true,
   },
   genre: {
     type: String,
-    required: true,
+
     trim: true,
   },
   publishedAt: {
     type: Date,
-    required: true,
   },
   price: {
     type: Object,
-    required: true,
+
     mrp: {
       type: Number,
       require: true,
@@ -81,14 +80,12 @@ const bookSchema = new Schema<BookDoc>({
   },
   fileInfo: {
     type: Object,
-    required: true,
+
     url: {
       type: Number,
-      require: true,
     },
     id: {
       type: Number,
-      require: true,
     },
   },
 });

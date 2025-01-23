@@ -122,14 +122,14 @@ export const newBookSchema = z.object({
   fileInfo,
 });
 
-const makeFieldsOptional = (schema: Record<string, z.ZodTypeAny>) => {
-  return Object.fromEntries(
-    Object.entries(schema).map(([key, value]) => [key, value.optional()])
-  );
-};
+// const makeFieldsOptional = (schema: Record<string, z.ZodTypeAny>) => {
+//   return Object.fromEntries(
+//     Object.entries(schema).map(([key, value]) => [key, value.optional()])
+//   );
+// };
 
 export const updateBookSchema = z.object({
-  ...makeFieldsOptional(commonBookSchema),
+  ...commonBookSchema,
   slug: z.string({
     message: "Invalid slug!",
   }),

@@ -1,6 +1,7 @@
 import { HttpStatusCode } from "@/constant";
-import { newAuthorSchema } from "@/validators/author.validation";
+import { newAuthorSchema } from "@/validators/author/author.validation";
 import { newBookSchema, updateBookSchema } from "@/validators/book/book.validation";
+import { newReviewSchema } from "@/validators/review/review.validation";
 import { RequestHandler, Response } from "express";
 import { z } from "zod";
 
@@ -28,6 +29,7 @@ export interface IApiError {
 type AuthorHandlerBody = z.infer<typeof newAuthorSchema>;
 export type newBookBody = z.infer<typeof newBookSchema>;
 export type updateBookType = z.infer<typeof updateBookSchema>;
+export type newReviewType = z.infer<typeof newReviewSchema>;
 
 export type RequestAuthorHandler = RequestHandler<{}, {}, AuthorHandlerBody>;
 export type customReqHandler<T> = RequestHandler<{}, {}, T>;

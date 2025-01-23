@@ -4,11 +4,11 @@ import {
   ProfileInfo,
   updateProfile,
   verifyAuthToken,
-} from "@/controllers/auth.controller";
+} from "@/controllers";
 import { fileParser } from "@/middlewares/file.middelware";
 import { isAuth } from "@/middlewares/isAuth.middleware";
 import { validater } from "@/middlewares/validator.middlewares";
-import { emailschema, newUserSchema } from "@/validators/auth.validation";
+import { emailschema, newUserSchema } from "@/validators/auth/auth.validation";
 import { Router } from "express";
 
 const authRouter = Router();
@@ -25,4 +25,4 @@ authRouter
 
 authRouter.get("/logout", isAuth, logout);
 
-export default authRouter;
+export { authRouter };

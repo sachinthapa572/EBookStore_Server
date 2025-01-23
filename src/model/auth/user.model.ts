@@ -18,6 +18,7 @@ export interface userDoc {
   };
   save: () => Promise<userDoc>;
   authorId?: ObjectId;
+  books: ObjectId[];
 }
 
 interface Methods {
@@ -70,6 +71,12 @@ const userSchema = new Schema<userDoc, {}, Methods>(
         default: "",
       },
     },
+    books: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Book",
+      },
+    ],
   },
   {
     timestamps: true,

@@ -14,6 +14,7 @@ import morganMiddleware from "@/logger/morgan.logger";
 // @ts-ignore
 import logger from "@/logger/winston.logger";
 import path from "path";
+import redis from "@/config/redisClient";
 
 const app = express();
 

@@ -14,6 +14,7 @@ import { EmailTemplate, mailService } from "@/services/email.service";
 import { ObjectId } from "mongoose";
 import { formatUserProfile } from "@/utils/helper";
 import { updateAvatarToCloudinary } from "@/utils/fileUpload";
+import redis from "@/config/redisClient";
 
 // handel both signup and login
 export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
@@ -112,6 +113,8 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
   const { refreshToken, accessToken } = await generateAccessTokenAndRefreshToken(
     user._id as ObjectId
   );
+
+  // redis.setex(user._id.toString(), 60 * 60 * 24 * 30, accessToken);
 
   res
     .cookie("accessToken", accessToken, cookiesOptions)
