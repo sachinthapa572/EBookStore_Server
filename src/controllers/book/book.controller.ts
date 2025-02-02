@@ -1,7 +1,7 @@
 import slugify from "slugify";
 
 import BookModel, { BookDoc } from "@/model/Book/book.model";
-import { customReqHandler, newBookBody, updateBookType } from "@/types";
+import { customReqHandler, newBookBody, PopulatedBook, updateBookType } from "@/types";
 import ApiError from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 import {
@@ -17,7 +17,11 @@ import { formatFileSize } from "@/utils/helper";
 import AuthorModel from "@/model/auth/author.model";
 import ApiResponse from "@/utils/ApiResponse";
 import logger from "@/logger/winston.logger";
-import path from "path";
+import path, { format } from "path";
+import { RequestHandler } from "express";
+import UserModel from "@/model/auth/user.model";
+import { title } from "process";
+import apiError from "@/utils/ApiError";
 
 const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, res) => {
   const { body, files, user } = req;
@@ -194,4 +198,51 @@ const updateBookDetails: customReqHandler<updateBookType> = asyncHandler(async (
 // delete book controller
 // check if the book is already purchased by a user then dont allow to delete the boook
 
-export { createNewBook, updateBookDetails };
+const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+
+  const PurchaseBook = await UserModel.findOne({
+    _id,
+  }).populate<{ books: PopulatedBook[] }>({
+    path: "books",
+    select: "author title cover slug",
+    populate: {
+      path: "author",
+      select: "slug name",
+    },
+  });
+
+  if (!PurchaseBook) {
+    res.status(200).json(new ApiResponse(200, [], "Fetch Books "));
+  }
+  const formatedBook = PurchaseBook?.books.map((book) => ({
+    id: book._id,
+    title: book.title,
+    slug: book.slug,
+    cover: book.cover.url,
+    author: {
+      name: book.author.slug,
+      slug: book.author.name,
+    },
+  }));
+
+  res.status(200).json(new ApiResponse(200, formatedBook, "Fetched Books"));
+});
+
+const getBookPublicsDetails:RequestHandler = asyncHandler(async (req, res) => {
+  const bookDetails = await BookModel.findById({ _id: req.params?.bookslug }).populate<{
+    author: PopulatedBook["author"];
+  }>({
+    path: "author",
+    select: "name slug",
+  });
+
+  if (!bookDetails) {
+    throw new ApiError(400, "Book Not found ");
+  }
+
+  const { _id, title, cover, author, slug, description, language, publicationName } =
+    bookDetails.;
+});
+
+export { createNewBook, updateBookDetails, getAllPurchaseData, getBookPublicsDetails };
