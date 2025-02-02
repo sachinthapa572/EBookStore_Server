@@ -1,5 +1,3 @@
 import { asyncHandler } from "@/utils/asyncHandler";
 
-export const  addHistoryController = asyncHandler(() => { 
-
- })
+export const addHistoryController = asyncHandler(() => {});

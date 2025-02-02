@@ -17,11 +17,9 @@ import { formatFileSize } from "@/utils/helper";
 import AuthorModel from "@/model/auth/author.model";
 import ApiResponse from "@/utils/ApiResponse";
 import logger from "@/logger/winston.logger";
-import path, { format } from "path";
+import path from "path";
 import { RequestHandler } from "express";
 import UserModel from "@/model/auth/user.model";
-import { title } from "process";
-import apiError from "@/utils/ApiError";
 
 const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, res) => {
   const { body, files, user } = req;
@@ -215,6 +213,7 @@ const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
   if (!PurchaseBook) {
     res.status(200).json(new ApiResponse(200, [], "Fetch Books "));
   }
+
   const formatedBook = PurchaseBook?.books.map((book) => ({
     id: book._id,
     title: book.title,
@@ -229,8 +228,8 @@ const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, formatedBook, "Fetched Books"));
 });
 
-const getBookPublicsDetails:RequestHandler = asyncHandler(async (req, res) => {
-  const bookDetails = await BookModel.findById({ _id: req.params?.bookslug }).populate<{
+const getBookPublicsDetails: RequestHandler = asyncHandler(async (req, res) => {
+  const bookDetails = await BookModel.findOne({ _id: req.params?.bookslug }).populate<{
     author: PopulatedBook["author"];
   }>({
     path: "author",
@@ -242,7 +241,23 @@ const getBookPublicsDetails:RequestHandler = asyncHandler(async (req, res) => {
   }
 
   const { _id, title, cover, author, slug, description, language, publicationName } =
-    bookDetails.;
+    bookDetails;
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      id: _id,
+      title,
+      cover: cover?.url,
+      author: {
+        name: author.name,
+        slug: author.slug,
+      },
+      slug,
+      description,
+      language,
+      publicationName,
+    })
+  );
 });
 
 export { createNewBook, updateBookDetails, getAllPurchaseData, getBookPublicsDetails };

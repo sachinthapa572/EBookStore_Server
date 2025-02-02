@@ -23,72 +23,77 @@ export interface BookDoc {
   };
 }
 
-const bookSchema = new Schema<BookDoc>({
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: "author",
-  },
-  title: {
-    type: String,
-
-    trim: true,
-  },
-  slug: {
-    type: String,
-
-    trim: true,
-    unique: true,
-  },
-  description: {
-    type: String,
-
-    trim: true,
-  },
-  language: {
-    type: String,
-
-    trim: true,
-  },
-  publicationName: {
-    type: String,
-
-    trim: true,
-  },
-  genre: {
-    type: String,
-
-    trim: true,
-  },
-  publishedAt: {
-    type: Date,
-  },
-  price: {
-    type: Object,
-
-    mrp: {
-      type: Number,
-      require: true,
+const bookSchema = new Schema<BookDoc>(
+  {
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "author",
     },
-    sale: {
-      type: Number,
-      require: true,
-    },
-  },
-  cover: {
-    url: String,
-    id: String,
-  },
-  fileInfo: {
-    type: Object,
+    title: {
+      type: String,
 
-    url: {
-      type: Number,
+      trim: true,
     },
-    id: {
-      type: Number,
+    slug: {
+      type: String,
+
+      trim: true,
+      unique: true,
+    },
+    description: {
+      type: String,
+
+      trim: true,
+    },
+    language: {
+      type: String,
+
+      trim: true,
+    },
+    publicationName: {
+      type: String,
+
+      trim: true,
+    },
+    genre: {
+      type: String,
+
+      trim: true,
+    },
+    publishedAt: {
+      type: Date,
+    },
+    price: {
+      type: Object,
+
+      mrp: {
+        type: Number,
+        require: true,
+      },
+      sale: {
+        type: Number,
+        require: true,
+      },
+    },
+    cover: {
+      url: String,
+      id: String,
+    },
+    fileInfo: {
+      type: Object,
+
+      url: {
+        type: Number,
+      },
+      id: {
+        type: Number,
+      },
     },
   },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const BookModel = model("Book", bookSchema);
 

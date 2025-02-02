@@ -34,7 +34,7 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
   }
 };
 
-// add the review  
+// add the review
 export const addReview: customReqHandler<newReviewType> = asyncHandler(async (req, res) => {
   const { body, user } = req;
   const { rating, content, bookId } = body;

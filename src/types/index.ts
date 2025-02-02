@@ -26,6 +26,21 @@ export interface IApiError {
   status: string;
 }
 
+export type PopulatedBook = {
+  cover: {
+    url: string;
+    id: string;
+  };
+  _id: string;
+  author: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
+  title: string;
+  slug: string;
+};
+
 type AuthorHandlerBody = z.infer<typeof newAuthorSchema>;
 export type newBookBody = z.infer<typeof newBookSchema>;
 export type updateBookType = z.infer<typeof updateBookSchema>;
