@@ -9,7 +9,7 @@ import { isValidObjectId } from "mongoose";
 
 // Utility function to calculate averages
 const calculateAndUpdateAvgRating = async (bookId: string) => {
-  const [result] = await ReviewModel.aggregate<{
+  const { avgRating, count } = await ReviewModel.aggregate<{
     avgRating: number;
     count: number;
   }>([
@@ -21,17 +21,15 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
         count: { $sum: 1 },
       },
     },
-  ]);
+  ]).then((result) => result[0] || { avgRating: 0, count: 0 });
 
-  if (result) {
-    await ReviewModel.updateOne(
-      { bookId },
-      {
-        avgRating: result.avgRating,
-        totalReviews: result.count,
-      }
-    );
-  }
+  await ReviewModel.updateOne(
+    { bookId },
+    {
+      avgRating,
+      totalReviews: count,
+    }
+  );
 };
 
 // add the review
@@ -40,20 +38,9 @@ export const addReview: customReqHandler<newReviewType> = asyncHandler(async (re
   const { rating, content, bookId } = body;
 
   const review = await ReviewModel.findOneAndUpdate(
-    {
-      bookId,
-      userId: user._id,
-    },
-    {
-      rating,
-      content,
-      bookId,
-      userId: user._id,
-    },
-    {
-      upsert: true,
-      new: true,
-    }
+    { bookId, userId: user._id },
+    { rating, content, bookId, userId: user._id },
+    { upsert: true, new: true }
   );
 
   if (!review) {
@@ -93,14 +80,15 @@ export const getReview: RequestHandler = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid book ID");
   }
 
-  // Ensure `page` and `limit` are numbers
-  const pageNumber = Math.max(Number(page) || 1, 1); // Convert to number and default to 1 if invalid
-  const limitNumber = Math.max(Number(limit) || 10, 1); // Convert to number and default to 10 if invalid
+  const pageNumber = Math.max(Number(page) || 1, 1);
+  const limitNumber = Math.max(Number(limit) || 10, 1);
 
-  const totalReviews = await ReviewModel.countDocuments({ bookId });
-  const reviews = await ReviewModel.find({ bookId })
-    .skip((pageNumber - 1) * limitNumber) // Use `pageNumber` and `limitNumber` for arithmetic
-    .limit(limitNumber);
+  const [totalReviews, reviews] = await Promise.all([
+    ReviewModel.countDocuments({ bookId }),
+    ReviewModel.find({ bookId })
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber),
+  ]);
 
   const totalPages = Math.ceil(totalReviews / limitNumber);
   const nextPage = pageNumber < totalPages ? pageNumber + 1 : null;

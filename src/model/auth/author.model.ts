@@ -1,6 +1,6 @@
 import { Model, model, ObjectId, Schema } from "mongoose";
 
-interface AuthorDoc {
+export interface AuthorDoc {
   userId: ObjectId;
   name: string;
   about: string;

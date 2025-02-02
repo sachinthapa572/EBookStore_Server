@@ -8,19 +8,23 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { RequestHandler } from "express";
 import slugify from "slugify";
 
-const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res, _next) => {
+const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res) => {
   const { body, user } = req;
+
+  // Check if user is signed up
   if (!user.signedUp) {
     throw new ApiError(
       HttpStatusCode.Forbidden,
-      "User must be signed Up before registring as the author "
+      "User must be signed up before registering as an author"
     );
   }
 
+  // Check if user is already an author
   if (user.role === "author") {
-    throw new ApiError(HttpStatusCode.Forbidden, "User is already an author ");
+    throw new ApiError(HttpStatusCode.Forbidden, "User is already an author");
   }
 
+  // Create a new author
   const newAuthor = new AuthorModel({
     name: body.name,
     about: body.about,
@@ -28,52 +32,50 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res, _next
     socialLinks: body.socialLinks,
   });
 
-  const uniqueSlug = slugify(`${newAuthor.name}${newAuthor._id}`, {
+  // Generate a unique slug
+  newAuthor.slug = slugify(`${newAuthor.name}${newAuthor._id}`, {
     lower: true,
     replacement: "-",
   });
 
-  newAuthor.slug = uniqueSlug;
+  // Save the new author
   await newAuthor.save();
 
-  await UserModel.findByIdAndUpdate(user._id, {
-    role: "author",
-    authorId: newAuthor._id,
-  });
+  // Update the user's role and authorId
+  await UserModel.findByIdAndUpdate(user._id, { role: "author", authorId: newAuthor._id });
 
-  res.status(200).json(
-    new ApiResponse(
-      201,
-      {
-        slug: newAuthor.slug,
-      },
-      "Thanks for the registring as an author "
-    )
-  );
+  res
+    .status(201)
+    .json(
+      new ApiResponse(201, { slug: newAuthor.slug }, "Thanks for registering as an author")
+    );
 });
 
 export const getAuthorDetails: RequestHandler = asyncHandler(async (req, res) => {
-  const authorslug = req.params.slug;
+  const authorSlug = req.params.slug;
 
-  if (!authorslug) {
-    throw new ApiError(400, "Author slug is missing ");
+  // Check if author slug is provided
+  if (!authorSlug) {
+    throw new ApiError(HttpStatusCode.BadRequest, "Author slug is missing");
   }
 
-  const author = await AuthorModel.findOne({ slug: authorslug });
+  // Fetch the author
+  const author = await AuthorModel.findOne({ slug: authorSlug });
   if (!author) {
-    throw new ApiError(404, "Author not Found ");
+    throw new ApiError(HttpStatusCode.NotFound, "Author not found");
   }
 
+  // Return the author details
   res.json(
     new ApiResponse(
-      200,
+      HttpStatusCode.OK,
       {
         id: author._id,
         name: author.name,
         about: author.about,
         socialLinks: author.socialLinks,
       },
-      "Fetch user successfully "
+      "Fetch user successfully"
     )
   );
 });
