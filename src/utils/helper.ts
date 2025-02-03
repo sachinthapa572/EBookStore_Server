@@ -1,4 +1,4 @@
-import { userDoc } from "@/model/auth/user.model";
+import { userDoc } from "@/model/user/user.model";
 import { Request } from "express";
 
 export const formatUserProfile = (user: userDoc): Request["user"] => {

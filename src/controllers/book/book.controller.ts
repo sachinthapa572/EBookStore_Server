@@ -9,12 +9,12 @@ import {
   uploadBookTolocalDir,
 } from "@/utils/fileUpload";
 import { formatFileSize } from "@/utils/helper";
-import AuthorModel from "@/model/auth/author.model";
+import AuthorModel from "@/model/author/author.model";
 import ApiResponse from "@/utils/ApiResponse";
 import logger from "@/logger/winston.logger";
 import path from "path";
 import { RequestHandler } from "express";
-import UserModel from "@/model/auth/user.model";
+import UserModel from "@/model/user/user.model";
 
 const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, res) => {
   const { body, files, user } = req;

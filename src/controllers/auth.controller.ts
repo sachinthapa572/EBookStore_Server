@@ -1,6 +1,6 @@
 import crypto from "crypto";
-import UserModel, { userDoc } from "@/model/auth/user.model";
-import VerificationTokenModel from "@/model/auth/verificationToken.model";
+import UserModel, { userDoc } from "@/model/user/user.model";
+import VerificationTokenModel from "@/model/authentication/verificationToken.model";
 import ApiResponse from "@/utils/ApiResponse";
 import ApiError from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
@@ -44,16 +44,16 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
   );
   await mailService.sendVerificatinMail({ email, res, emailTemplate });
 
-    res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          email: User.email,
-          link: `http://localhost:3000/api/v1/auth/verify?userId=${verificationToken.token}`,
-        },
-        "Verification link sent to your email , Please verify your email"
-      )
-    );
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        email: User.email,
+        link: `http://localhost:3000/api/v1/auth/verify?userId=${verificationToken.token}`,
+      },
+      "Verification link sent to your email , Please verify your email"
+    )
+  );
   // res.status(200).json(
   //   new ApiResponse(
   //     200,

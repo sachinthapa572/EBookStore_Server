@@ -1,6 +1,6 @@
 import { HttpStatusCode } from "@/constant";
-import AuthorModel from "@/model/auth/author.model";
-import UserModel from "@/model/auth/user.model";
+import AuthorModel from "@/model/author/author.model";
+import UserModel from "@/model/user/user.model";
 import { RequestAuthorHandler } from "@/types";
 import ApiError from "@/utils/ApiError";
 import ApiResponse from "@/utils/ApiResponse";

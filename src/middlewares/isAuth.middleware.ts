@@ -1,5 +1,5 @@
 import { appEnv } from "@/config/env";
-import UserModel from "@/model/auth/user.model";
+import UserModel from "@/model/user/user.model";
 import { customReqHandler, newReviewType } from "@/types";
 import ApiError from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";

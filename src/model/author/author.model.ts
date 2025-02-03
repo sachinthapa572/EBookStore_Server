@@ -20,6 +20,8 @@ const authorSchema = new Schema<AuthorDoc>(
       type: String,
       required: true,
       trim: true,
+      unique: true,
+      tolowercase: true,
     },
     //   something like the github.com/{thapasachin572}==> slug
     slug: {

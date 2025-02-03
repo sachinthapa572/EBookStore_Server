@@ -1,4 +1,4 @@
-import UserModel from "@/model/auth/user.model";
+import UserModel from "@/model/user/user.model";
 import ApiError from "./ApiError";
 import { ObjectId } from "mongoose";
 
