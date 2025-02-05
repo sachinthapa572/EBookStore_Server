@@ -85,6 +85,7 @@ const userSchema = new Schema<userDoc, {}, Methods>(
 
 // tokens
 userSchema.methods.generateAccessToken = function () {
+  // @ts-ignore
   return jwt.sign(
     {
       _id: this._id,
@@ -100,6 +101,7 @@ userSchema.methods.generateAccessToken = function () {
 };
 
 userSchema.methods.generateRefreshToken = function () {
+  // @ts-ignore
   return jwt.sign(
     {
       _id: this._id,

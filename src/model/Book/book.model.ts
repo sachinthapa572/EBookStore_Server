@@ -33,31 +33,27 @@ const bookSchema = new Schema<BookDoc>(
       type: String,
 
       trim: true,
+      lowercase: true,
     },
     slug: {
       type: String,
-
       trim: true,
       unique: true,
     },
     description: {
       type: String,
-
       trim: true,
     },
     language: {
       type: String,
-
       trim: true,
     },
     publicationName: {
       type: String,
-
       trim: true,
     },
     genre: {
       type: String,
-
       trim: true,
     },
     publishedAt: {
@@ -65,7 +61,6 @@ const bookSchema = new Schema<BookDoc>(
     },
     price: {
       type: Object,
-
       mrp: {
         type: Number,
         require: true,

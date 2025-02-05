@@ -16,6 +16,7 @@ export enum HttpStatusCode {
   NotFound = 404,
   InternalServerError = 500,
   SERVICEUNAVAILABLE = 503,
+  TOO_MANY_REQUESTS = 429,
 }
 
 export const statusMessages: { [key in HttpStatusCode]: string } = {
@@ -26,6 +27,8 @@ export const statusMessages: { [key in HttpStatusCode]: string } = {
   [HttpStatusCode.NotFound]: "Not Found",
   [HttpStatusCode.InternalServerError]: "Internal Server Error",
   [HttpStatusCode.SERVICEUNAVAILABLE]: "Service Unavailable",
+  [HttpStatusCode.TOO_MANY_REQUESTS]: "Too Many Requests",
+
 };
 
 export const cookiesOptions = {
@@ -37,6 +40,7 @@ export const bookstoragePath = path.resolve(__dirname, "../public/books");
 export const photoStoragePath = path.resolve(__dirname, "../public/photos");
 
 export const corsOptions = {
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
   origin: appEnv.CORS_ORIGIN === "*" ? "*" : process.env.CORS_ORIGIN?.split(","),
   credentials: true,
 };

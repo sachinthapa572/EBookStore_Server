@@ -12,9 +12,7 @@ import { EmailTemplate, mailService } from "@/services/email.service";
 import { ObjectId } from "mongoose";
 import { formatUserProfile } from "@/utils/helper";
 import { updateAvatarToCloudinary } from "@/utils/fileUpload";
-import redis from "@/config/redisClient";
 
-// Optimize the generateAuthLink function
 export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -23,7 +21,7 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
     { email },
     { email },
     { upsert: true, new: true }
-  );
+  ).lean();
 
   // Remove the existing verification token
   await VerificationTokenModel.deleteOne({ user: user._id });
@@ -48,12 +46,13 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
     new ApiResponse(
       200,
       {
-        email: User.email,
+        email: user.email,
         link: `http://localhost:3000/api/v1/auth/verify?userId=${verificationToken.token}`,
       },
       "Verification link sent to your email , Please verify your email"
     )
   );
+
   // res.status(200).json(
   //   new ApiResponse(
   //     200,
@@ -66,7 +65,6 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
   // );
 });
 
-// Optimize the verifyAuthToken function
 export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
   const { userId } = req.query as { userId: string };
   if (!userId || typeof userId !== "string") {
@@ -80,6 +78,7 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
   const verificationToken = await VerificationTokenModel.findOne({ token: userId }).populate<{
     user: userDoc;
   }>("user");
+
   if (!verificationToken || !verificationToken.user) {
     throw new ApiError(HttpStatusCode.BadRequest, "Invalid or expired verification token.");
   }
@@ -115,17 +114,14 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
   // res.redirect(`${env.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`);
 });
 
-// Optimize the ProfileInfo function
 export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(HttpStatusCode.OK, { profile: req.user }));
 });
 
-// Optimize the logout function
 export const logout: RequestHandler = asyncHandler(async (req, res) => {
   res.clearCookie("accessToken").clearCookie("refreshToken").send();
 });
 
-// Optimize the updateProfile function
 export const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
   const user = await UserModel.findByIdAndUpdate(
     req.user._id,

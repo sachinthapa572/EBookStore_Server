@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   createNewBook,
+  getAllAvailableBooksController,
   getAllPurchaseData,
   getBookPublicsDetails,
   updateBookDetails,
@@ -15,11 +16,14 @@ import { newBookSchema, updateBookSchema } from "@/validators/book/book.validati
 
 const bookRotuer = Router();
 
-bookRotuer.use(isAuth, isAuthor);
+// bookRotuer.use(isAuth, isAuthor);
 
-bookRotuer.post("/create", fileParser, validater(newBookSchema), createNewBook);
-bookRotuer.patch("/", fileParser, validater(updateBookSchema), updateBookDetails);
-bookRotuer.get("/Purchaselibrary", getAllPurchaseData);
-bookRotuer.get("/bookdetail/:bookslug", getBookPublicsDetails);
+const validation = [isAuth, isAuthor];
+
+bookRotuer.post("/create", validation, fileParser, validater(newBookSchema), createNewBook);
+bookRotuer.patch("/", validation, fileParser, validater(updateBookSchema), updateBookDetails);
+bookRotuer.get("/all", getAllAvailableBooksController);
+bookRotuer.get("/Purchaselibrary", validation, getAllPurchaseData);
+bookRotuer.get("/bookdetail/:bookslug", validation, getBookPublicsDetails);
 
 export { bookRotuer };

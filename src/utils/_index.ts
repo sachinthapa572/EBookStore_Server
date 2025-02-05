@@ -5,3 +5,4 @@ export * from "./authTokenGenerator";
 export * from "./fileUpload";
 export * from "./hashToken";
 export * from "./helper";
+export * from "./quicker";

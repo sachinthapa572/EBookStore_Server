@@ -15,6 +15,17 @@ import logger from "@/logger/winston.logger";
 import path from "path";
 import { RequestHandler } from "express";
 import UserModel from "@/model/user/user.model";
+import { promise } from "zod";
+
+interface QueryType {
+  author?: string;
+  title?: { $regex: string; $options: string };
+  language?: { $in: string[] };
+  genre?: { $in: string[] };
+  publicationName?: { $in: string[] };
+  publishedAt?: Date;
+  price?: { $gte: number; $lte: number };
+}
 
 const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, res) => {
   const { body, files, user } = req;
@@ -201,4 +212,72 @@ const getBookPublicsDetails: RequestHandler = asyncHandler(async (req, res) => {
   );
 });
 
-export { createNewBook, updateBookDetails, getAllPurchaseData, getBookPublicsDetails };
+const getAllAvailableBooksController = asyncHandler(async (req, res) => {
+
+  const filter = {
+    author: req.query.author as string | undefined,
+    title: req.query.title ? (req.query.title as string) : undefined,
+    language: req.query.language ? (req.query.language as string)?.split(",") : undefined,
+    genre: req.query.genre ? (req.query.genre as string)?.split(",") : undefined,
+    publicationName: req.query.publicationName
+      ? (req.query.publicationName as string)?.split(",")
+      : undefined,
+    publishedAt: req.query.publishedAt as Date | undefined,
+    price: req.query.price ? (req.query.price as string) : undefined,
+  };
+
+  const pagination = {
+    pageSize: parseInt(req.query.pageSize as string) || 10,
+    pageNumber: parseInt(req.query.pageNumber as string) || 1,
+  };
+  const query: QueryType = {
+    ...(filter.author && { author: filter.author }),
+    ...(filter.title && { title: { $regex: filter.title, $options: "i" } }),
+    ...(filter.language && { language: { $in: filter.language } }),
+    ...(filter.genre && { genre: { $in: filter.genre } }),
+    ...(filter.publicationName && { publicationName: { $in: filter.publicationName } }),
+    ...(filter.publishedAt && { publishedAt: filter.publishedAt }),
+    ...(filter.price && {
+      price: {
+        $gte: parseInt(filter.price.split("-")[0]),
+        $lte: parseInt(filter.price.split("-")[1]),
+      },
+    }),
+  };
+
+  const { pageSize, pageNumber } = pagination;
+  const skip = (pageNumber - 1) * pageSize;
+
+  const [books, totalCount] = await Promise.all([
+    await BookModel.find(query).skip(skip).limit(pageSize),
+    BookModel.countDocuments(query),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        books,
+        pagination: {
+          pageSize,
+          pageNumber,
+          totalCount,
+          totalPages,
+          skip,
+        },
+      },
+      "Fetched Books"
+    )
+  );
+ 
+});
+
+export {
+  createNewBook,
+  updateBookDetails,
+  getAllPurchaseData,
+  getBookPublicsDetails,
+  getAllAvailableBooksController,
+};
