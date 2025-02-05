@@ -5,7 +5,7 @@ import {
   ConsoleTransportInstance,
   FileTransportInstance,
 } from "winston/lib/winston/transports";
-import { EApplicationEnvironment } from "../constant/application";
+import { EApplicationEnvironment } from "@/enum";
 import path from "path";
 import { red, blue, yellow, green, magenta } from "colorette";
 import * as sourceMapSupport from "source-map-support";

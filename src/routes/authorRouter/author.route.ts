@@ -1,8 +1,8 @@
-import { getAuthorDetails, registerAuthor } from "@/controllers";
-import { isAuth } from "@/middlewares/isAuth.middleware";
-import { validater } from "@/middlewares/validator.middlewares";
-import { newAuthorSchema } from "@/validators/author/author.validation";
 import { Router } from "express";
+
+import { getAuthorDetails, registerAuthor } from "@/controllers";
+import { isAuth, validater } from "@/middlewares";
+import { newAuthorSchema } from "@/validators";
 
 const authorRouter = Router();
 

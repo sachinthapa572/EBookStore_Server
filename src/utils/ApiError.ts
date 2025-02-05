@@ -27,4 +27,4 @@ class ApiError extends Error implements IApiError {
   }
 }
 
-export default ApiError;
+export { ApiError };

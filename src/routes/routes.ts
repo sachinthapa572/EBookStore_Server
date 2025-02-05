@@ -1,12 +1,9 @@
 import { Router } from "express";
-import { authorRouter } from "./AuthorRouter/author.route";
-import { bookRotuer } from "./Book/book.route";
-import { reviewRouter } from "./Reviews/review.router";
-import { authRouter } from "./AuthRoute/auth.route";
-import quicker from "@/utils/quicker";
-import { ROLES } from "@/enum/_index";
-import roleGuard from "@/utils/roleGuard";
-import { isAuth } from "@/middlewares/isAuth.middleware";
+
+import { authorRouter, authRouter, bookRotuer, reviewRouter } from "./";
+import { quicker, roleGuard } from "@/utils";
+import { ROLES } from "@/enum";
+import { isAuth } from "@/middlewares";
 
 const routes = Router();
 

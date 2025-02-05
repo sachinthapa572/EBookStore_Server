@@ -35,5 +35,4 @@ const reviewSchema = new Schema<ReviewDoc>(
   { timestamps: true }
 );
 
-const ReviewModel = model("Review", reviewSchema);
-export default ReviewModel as Model<ReviewDoc>;
+export const ReviewModel = model<ReviewDoc>("Review", reviewSchema) as Model<ReviewDoc>;

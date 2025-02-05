@@ -6,8 +6,7 @@ import cors from "cors";
 import path from "path";
 
 import routes from "@/routes/routes";
-import { globalErrHandler, notFoundErr } from "@/middlewares/globalErrHandler.middleware";
-import refreshTokenMiddleware from "@/middlewares/refreshToken.middleware";
+import { globalErrHandler, notFoundErr, refreshTokenMiddleware } from "@/middlewares";
 import { corsOptions, limiter } from "@/constant";
 import morganMiddleware from "@/logger/morgan.logger";
 
@@ -34,6 +33,5 @@ app.use("/api/v1", routes);
 
 // Error middleware
 app.use(notFoundErr, globalErrHandler);
-
 
 export { app };

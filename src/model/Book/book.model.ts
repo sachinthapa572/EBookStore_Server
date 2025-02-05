@@ -90,6 +90,4 @@ const bookSchema = new Schema<BookDoc>(
   }
 );
 
-const BookModel = model("Book", bookSchema);
-
-export default BookModel as Model<BookDoc>;
+export const BookModel = model<BookDoc>("Book", bookSchema) as Model<BookDoc>;

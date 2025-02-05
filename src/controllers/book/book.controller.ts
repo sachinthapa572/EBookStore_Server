@@ -1,20 +1,19 @@
+import { RequestHandler } from "express";
 import slugify from "slugify";
-import BookModel, { BookDoc } from "@/model/Book/book.model";
+import path from "path";
+
+import { BookDoc, BookModel, AuthorModel, UserModel } from "@/model";
 import { customReqHandler, newBookBody, PopulatedBook, updateBookType } from "@/types";
-import ApiError from "@/utils/ApiError";
-import { asyncHandler } from "@/utils/asyncHandler";
 import {
+  ApiError,
+  asyncHandler,
   deleteFileFromLocalDir,
   uploadImageTolocalDir,
   uploadBookTolocalDir,
-} from "@/utils/fileUpload";
-import { formatFileSize } from "@/utils/helper";
-import AuthorModel from "@/model/author/author.model";
-import ApiResponse from "@/utils/ApiResponse";
-import logger from "@/logger/winston.logger";
-import path from "path";
-import { RequestHandler } from "express";
-import UserModel from "@/model/user/user.model";
+  formatFileSize,
+  ApiResponse,
+} from "@/utils";
+import logger from "@/utils/logger";
 
 interface QueryType {
   author?: string;
@@ -89,10 +88,8 @@ const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, re
       id: `http://localhost:3000/public/books/${bookObject.fileInfo.id}`,
     },
   };
-  logger.info(`New Book created successfully ${newBookResponse.title}`);
-  res
-    .status(201)
-    .json(new ApiResponse(200, { newBookResponse }, "New Book created successfully"));
+  logger.info(`Book "${newBookResponse.title}" created successfully`);
+  res.status(201).json(new ApiResponse(201, { newBookResponse }, "Book created successfully"));
 });
 
 const updateBookDetails: customReqHandler<updateBookType> = asyncHandler(async (req, res) => {
@@ -161,8 +158,8 @@ const updateBookDetails: customReqHandler<updateBookType> = asyncHandler(async (
       id: `http://localhost:3000/public/books/${bookObject.fileInfo.id}`,
     },
   };
-  logger.info(`Book Updated successfully ${newBookResponse.title}`);
-  res.status(201).json(new ApiResponse(200, { newBookResponse }, "Book Updated successfully"));
+  logger.info(`Book "${newBookResponse.title}" updated successfully`);
+  res.status(200).json(new ApiResponse(200, { newBookResponse }, "Book updated successfully"));
 });
 
 const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
@@ -183,7 +180,11 @@ const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
     author: { name: book.author.slug, slug: book.author.name },
   }));
 
-  res.status(200).json(new ApiResponse(200, formattedBooks || [], "Fetched Books"));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, formattedBooks || [], "Successfully retrieved purchased books")
+    );
 });
 
 const getBookPublicsDetails: RequestHandler = asyncHandler(async (req, res) => {
@@ -192,27 +193,30 @@ const getBookPublicsDetails: RequestHandler = asyncHandler(async (req, res) => {
   }>({ path: "author", select: "name slug" });
 
   if (!bookDetails) {
-    throw new ApiError(400, "Book Not found ");
+    throw new ApiError(404, "Book not found");
   }
 
   const { _id, title, cover, author, slug, description, language, publicationName } =
     bookDetails;
   res.status(200).json(
-    new ApiResponse(200, {
-      id: _id,
-      title,
-      cover: cover?.url,
-      author: { name: author.name, slug: author.slug },
-      slug,
-      description,
-      language,
-      publicationName,
-    })
+    new ApiResponse(
+      200,
+      {
+        id: _id,
+        title,
+        cover: cover?.url,
+        author: { name: author.name, slug: author.slug },
+        slug,
+        description,
+        language,
+        publicationName,
+      },
+      "Book details retrieved successfully"
+    )
   );
 });
 
 const getAllAvailableBooksController = asyncHandler(async (req, res) => {
-
   const filter = {
     author: req.query.author as string | undefined,
     title: req.query.title ? (req.query.title as string) : undefined,
@@ -267,10 +271,9 @@ const getAllAvailableBooksController = asyncHandler(async (req, res) => {
           skip,
         },
       },
-      "Fetched Books"
+      "Books retrieved successfully"
     )
   );
- 
 });
 
 export {

@@ -14,7 +14,7 @@ class ApiResponse<T> implements IApiResponse<T> {
   }
 }
 
-export default ApiResponse;
+export { ApiResponse };
 
 // The implements keyword is only used with classes to ensure they fulfill the structure of an interface.
 // It enforces adherence to a contract, making your code more robust and maintainable.

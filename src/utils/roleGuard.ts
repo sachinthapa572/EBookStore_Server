@@ -1,6 +1,6 @@
-import { RoleType } from "@/enum/role.enum";
+import { RoleType } from "@/enum/";
 import { Request } from "express";
-import ApiError from "./ApiError";
+import { ApiError } from "./";
 
 const roleGuard = (req: Request, role: RoleType) => {
   if (!req.user) {
@@ -12,4 +12,4 @@ const roleGuard = (req: Request, role: RoleType) => {
   }
 };
 
-export default roleGuard;
+export { roleGuard };

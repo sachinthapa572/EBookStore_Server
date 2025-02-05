@@ -1,19 +1,21 @@
-import crypto from "crypto";
-import UserModel, { userDoc } from "@/model/user/user.model";
-import VerificationTokenModel from "@/model/authentication/verificationToken.model";
-import ApiResponse from "@/utils/ApiResponse";
-import ApiError from "@/utils/ApiError";
-import { asyncHandler } from "@/utils/asyncHandler";
+import { ObjectId } from "mongoose";
 import { RequestHandler } from "express";
-import { appEnv } from "@/config/env";
-import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
+import crypto from "crypto";
+
+import { userDoc, UserModel, VerificationTokenModel } from "@/model";
+import {
+  ApiResponse,
+  ApiError,
+  asyncHandler,
+  generateAccessTokenAndRefreshToken,
+  formatUserProfile,
+  updateAvatarToCloudinary,
+} from "@/utils";
+import { appEnv } from "@/config";
 import { cookiesOptions, HttpStatusCode } from "@/constant";
 import { EmailTemplate, mailService } from "@/services/email.service";
-import { ObjectId } from "mongoose";
-import { formatUserProfile } from "@/utils/helper";
-import { updateAvatarToCloudinary } from "@/utils/fileUpload";
 
-export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
+const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   // Use findOneAndUpdate to create or update the user
@@ -42,30 +44,19 @@ export const generateAuthLink: RequestHandler = asyncHandler(async (req, res) =>
   );
   await mailService.sendVerificatinMail({ email, res, emailTemplate });
 
-  res.status(200).json(
+  res.status(HttpStatusCode.OK).json(
     new ApiResponse(
-      200,
+      HttpStatusCode.OK,
       {
         email: user.email,
-        link: `http://localhost:3000/api/v1/auth/verify?userId=${verificationToken.token}`,
+        link: `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`,
       },
-      "Verification link sent to your email , Please verify your email"
+      "Verification link has been sent to your email address. Please check your inbox."
     )
   );
-
-  // res.status(200).json(
-  //   new ApiResponse(
-  //     200,
-  //     {
-  //       email: user.email,
-  //       link: `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`,
-  //     },
-  //     "Verification link sent to your email, Please verify your email"
-  //   )
-  // );
 });
 
-export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
+const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
   const { userId } = req.query as { userId: string };
   if (!userId || typeof userId !== "string") {
     throw new ApiError(
@@ -107,22 +98,41 @@ export const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => 
   // redis.setex(user._id.toString(), 60 * 60 * 24 * 30, accessToken);
 
   res
+    .status(HttpStatusCode.OK)
     .cookie("accessToken", accessToken, cookiesOptions)
     .cookie("refreshToken", refreshToken, cookiesOptions)
-    .json(new ApiResponse(HttpStatusCode.OK, { profile: formatUserProfile(user) }));
+    .json(
+      new ApiResponse(
+        HttpStatusCode.OK,
+        { profile: formatUserProfile(user) },
+        "Email verification successful. Welcome!"
+      )
+    );
   // Redirect to the success URL
   // res.redirect(`${env.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`);
 });
 
-export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
-  res.status(200).json(new ApiResponse(HttpStatusCode.OK, { profile: req.user }));
+const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
+  res
+    .status(HttpStatusCode.OK)
+    .json(
+      new ApiResponse(
+        HttpStatusCode.OK,
+        { profile: req.user },
+        "Profile information retrieved successfully"
+      )
+    );
 });
 
-export const logout: RequestHandler = asyncHandler(async (_req, res) => {
-  res.clearCookie("accessToken").clearCookie("refreshToken").send();
+const logout: RequestHandler = asyncHandler(async (_req, res) => {
+  res
+    .status(HttpStatusCode.OK)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .json(new ApiResponse(HttpStatusCode.OK, null, "Logged out successfully"));
 });
 
-export const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
+const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
   const user = await UserModel.findByIdAndUpdate(
     req.user._id,
     { $set: { ...req.body, signedUp: true } },
@@ -138,7 +148,15 @@ export const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
     await user.save();
   }
 
-  res.json(
-    new ApiResponse(200, { profile: formatUserProfile(user) }, "Profile updated successfully")
-  );
+  res
+    .status(HttpStatusCode.OK)
+    .json(
+      new ApiResponse(
+        HttpStatusCode.OK,
+        { profile: formatUserProfile(user) },
+        "Profile has been updated successfully"
+      )
+    );
 });
+
+export { generateAuthLink, verifyAuthToken, ProfileInfo, logout, updateProfile };

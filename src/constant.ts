@@ -1,14 +1,16 @@
 import path from "path";
-import { appEnv } from "./config/env";
-import ApiError from "./utils/ApiError";
-import { v4 as uuidv4 } from "uuid";
 import rateLimit from "express-rate-limit";
+import { v4 as uuidv4 } from "uuid";
+
+import { appEnv } from "./config/env";
+import { ApiError } from "./utils";
 
 export const DB_NAME: string = "E-BookStore";
 
 // Api error class HttpStatusCode enum
 
 export enum HttpStatusCode {
+  Created = 201,
   OK = 200,
   BadRequest = 400,
   Unauthorized = 401,
@@ -17,9 +19,10 @@ export enum HttpStatusCode {
   InternalServerError = 500,
   SERVICEUNAVAILABLE = 503,
   TOO_MANY_REQUESTS = 429,
+  UnprocessableEntity = 423,
 }
-
-export const statusMessages: { [key in HttpStatusCode]: string } = {
+// { [key in HttpStatusCode]: string }
+export const statusMessages: Record<HttpStatusCode, string> = {
   [HttpStatusCode.OK]: "OK",
   [HttpStatusCode.BadRequest]: "Bad Request",
   [HttpStatusCode.Unauthorized]: "Unauthorized",
@@ -28,13 +31,14 @@ export const statusMessages: { [key in HttpStatusCode]: string } = {
   [HttpStatusCode.InternalServerError]: "Internal Server Error",
   [HttpStatusCode.SERVICEUNAVAILABLE]: "Service Unavailable",
   [HttpStatusCode.TOO_MANY_REQUESTS]: "Too Many Requests",
-
+  [HttpStatusCode.Created]: "Created",
+  [HttpStatusCode.UnprocessableEntity]: "Unprocessable Entity",
 };
 
 export const cookiesOptions = {
   httpOnly: true,
   secure: true,
-};
+} as const;
 
 export const bookstoragePath = path.resolve(__dirname, "../public/books");
 export const photoStoragePath = path.resolve(__dirname, "../public/photos");

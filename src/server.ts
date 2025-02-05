@@ -1,12 +1,12 @@
-import { app } from "@/app/app";
-import { appEnv } from "@/config/env";
 import http from "http";
+
+import { app } from "@/app/app";
+import { appEnv, initRateLimiter } from "@/config";
 import databaseService from "./services/databaseService";
-import { initRateLimiter } from "./config/rateLimiter";
 import logger from "./utils/logger";
 
 const PORT = appEnv.PORT || 8001;
-const server = http.createServer(app);
+const server: ReturnType<typeof http.createServer> = http.createServer(app);
 
 (async () => {
   try {
@@ -37,7 +37,6 @@ const server = http.createServer(app);
       if (error) {
         logger.error(`APPLICATION_ERROR`, { meta: error });
       }
-
       process.exit(1);
     });
   }

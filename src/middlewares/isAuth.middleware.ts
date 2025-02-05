@@ -1,11 +1,10 @@
-import { appEnv } from "@/config/env";
-import UserModel from "@/model/user/user.model";
-import { customReqHandler, newReviewType } from "@/types";
-import ApiError from "@/utils/ApiError";
-import { asyncHandler } from "@/utils/asyncHandler";
-import { formatUserProfile } from "@/utils/helper";
 import { Request, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
+
+import { appEnv } from "@/config";
+import { UserModel } from "@/model";
+import { customReqHandler, newReviewType } from "@/types";
+import { ApiError, asyncHandler, formatUserProfile } from "@/utils";
 
 // The middleware function to verify JWT
 const verifyJWT: RequestHandler = async (req, _res, next) => {
@@ -14,34 +13,37 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
       req.cookies?.accessToken || req.headers.authorization?.replace(/^Bearer\s*/, "").trim();
 
     if (!token) {
-      return next(new ApiError(401, "Unauthorized request: No token provided"));
+      return next(
+        new ApiError(401, "Authentication required. Please provide a valid access token")
+      );
     }
 
     // Verify the token and decode the payload
     const decodedToken = jwt.verify(token, appEnv.ACCESS_TOKEN_SECRET) as Request["user"];
 
     if (!decodedToken?._id) {
-      return next(new ApiError(401, "Unauthorized request: Invalid token"));
+      return next(new ApiError(401, "Authentication failed. Invalid token format"));
     }
 
     const user = await UserModel.findById(decodedToken._id);
 
     if (!user) {
-      return next(new ApiError(401, "Unauthorized request: Invalid token"));
+      return next(new ApiError(401, "Authentication failed. User no longer exists"));
     }
 
     req.user = formatUserProfile(user);
     next();
   } catch (error) {
     if (error instanceof Error) {
-      if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
-        return next(
-          new ApiError(401, "Unauthorized request: Invalid or expired access token")
-        );
+      if (error.name === "JsonWebTokenError") {
+        return next(new ApiError(401, "Authentication failed. The token is invalid"));
       }
-      return next(new ApiError(500, "Internal Server Error"));
+      if (error.name === "TokenExpiredError") {
+        return next(new ApiError(401, "Authentication failed. The token has expired"));
+      }
+      return next(new ApiError(500, "An unexpected error occurred during authentication"));
     }
-    return next(new ApiError(500, "Internal Server Error"));
+    return next(new ApiError(500, "An unexpected error occurred during authentication"));
   }
 };
 
@@ -53,7 +55,9 @@ export const isPurchaseByTheUser: customReqHandler<newReviewType> = asyncHandler
     });
 
     if (!userDoc) {
-      return next(new ApiError(403, "Forbidden request: You have not purchased this book"));
+      return next(
+        new ApiError(403, "Access denied. This action requires prior purchase of the book")
+      );
     }
     next();
   }

@@ -46,7 +46,4 @@ const authorSchema = new Schema<AuthorDoc>(
     timestamps: true,
   }
 );
-
-const AuthorModel = model("Author", authorSchema);
-
-export default AuthorModel as Model<AuthorDoc>;
+export const AuthorModel = model<AuthorDoc>("Author", authorSchema) as Model<AuthorDoc>;

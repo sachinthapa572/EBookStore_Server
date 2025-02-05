@@ -1,11 +1,10 @@
-import logger from "@/logger/winston.logger";
-import ReviewModel from "@/model/review/review.model";
-import { customReqHandler, newReviewType } from "@/types";
-import ApiError from "@/utils/ApiError";
-import ApiResponse from "@/utils/ApiResponse";
-import { asyncHandler } from "@/utils/asyncHandler";
 import { RequestHandler } from "express";
 import { isValidObjectId } from "mongoose";
+
+import { ReviewModel } from "@/model";
+import { customReqHandler, newReviewType } from "@/types";
+import { ApiError, ApiResponse, asyncHandler } from "@/utils";
+import logger from "@/utils/logger";
 
 // Utility function to calculate averages
 const calculateAndUpdateAvgRating = async (bookId: string) => {
@@ -21,7 +20,7 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
         count: { $sum: 1 },
       },
     },
-  ]).then((result) => result[0] || { avgRating: 0, count: 0 });
+  ]).then((result: any) => result[0] || { avgRating: 0, count: 0 });
 
   await ReviewModel.updateOne(
     { bookId },
@@ -33,7 +32,7 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
 };
 
 // add the review
-export const addReview: customReqHandler<newReviewType> = asyncHandler(async (req, res) => {
+const addReview: customReqHandler<newReviewType> = asyncHandler(async (req, res) => {
   const { body, user } = req;
   const { rating, content, bookId } = body;
 
@@ -44,7 +43,7 @@ export const addReview: customReqHandler<newReviewType> = asyncHandler(async (re
   );
 
   if (!review) {
-    throw new ApiError(500, "Failed to add review");
+    throw new ApiError(423, "Unable to process review submission");
   }
 
   // Update average rating if there are more than 10 reviews
@@ -54,10 +53,10 @@ export const addReview: customReqHandler<newReviewType> = asyncHandler(async (re
   }
 
   logger.info(`Review successfully added for book ${bookId}`);
-  res.status(201).json(new ApiResponse(201, review, "Review added successfully"));
+  res.status(201).json(new ApiResponse(201, review, "Review has been successfully submitted"));
 });
 
-export const deleteReview: RequestHandler = asyncHandler(async (req, res) => {
+const deleteReview: RequestHandler = asyncHandler(async (req, res) => {
   const { body, user } = req;
 
   const review = await ReviewModel.findOneAndDelete({
@@ -66,13 +65,18 @@ export const deleteReview: RequestHandler = asyncHandler(async (req, res) => {
   });
 
   if (!review) {
-    throw new ApiError(404, "Review not found or user not authorized");
+    throw new ApiError(
+      403,
+      "You are not authorized to delete this review or the review does not exist"
+    );
   }
 
-  res.status(200).json(new ApiResponse(200, {}, "Review deleted successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, { reviewId: body.id }, "Review has been successfully removed"));
 });
 
-export const getReview: RequestHandler = asyncHandler(async (req, res) => {
+const getReview: RequestHandler = asyncHandler(async (req, res) => {
   const { bookId } = req.params;
   const { page = "1", limit = "10" } = req.query;
 
@@ -103,7 +107,11 @@ export const getReview: RequestHandler = asyncHandler(async (req, res) => {
         currentPage: pageNumber.toString(),
         nextPage: nextPage?.toString() || null,
       },
-      reviews.length ? "Reviews found" : "No reviews available"
+      reviews.length
+        ? `Successfully retrieved ${reviews.length} reviews`
+        : "No reviews found for this book"
     )
   );
 });
+
+export { addReview, deleteReview, getReview };

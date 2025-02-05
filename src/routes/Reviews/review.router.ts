@@ -1,8 +1,8 @@
-import { addReview, getReview } from "@/controllers";
-import { isAuth, isPurchaseByTheUser } from "@/middlewares/isAuth.middleware";
-import { validater } from "@/middlewares/validator.middlewares";
-import { newReviewSchema } from "@/validators/review/review.validation";
 import { Router } from "express";
+
+import { addReview, getReview } from "@/controllers";
+import { isAuth, isPurchaseByTheUser, validater } from "@/middlewares";
+import { newReviewSchema } from "@/validators";
 
 const reviewRouter = Router();
 

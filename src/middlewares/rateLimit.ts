@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { EApplicationEnvironment } from "../constant/application";
-import { rateLimiterMongo } from "../config/rateLimiter";
-import responseMessage from "../constant/responseMessage";
-import ApiError from "@/utils/ApiError";
+
+import { EApplicationEnvironment, responseMessage } from "@/enum";
+import { rateLimiterMongo, appEnv } from "@/config";
+import { ApiError } from "@/utils";
 import { HttpStatusCode } from "@/constant";
-import { appEnv } from "@/config/env";
 
 export default (req: Request, _: Response, next: NextFunction) => {
   if (appEnv.NODE_ENV === EApplicationEnvironment.DEVELOPMENT) {

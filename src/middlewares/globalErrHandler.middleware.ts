@@ -1,16 +1,16 @@
-import { appEnv } from "@/config/env";
-import ApiError from "@/utils/ApiError";
 import { ErrorRequestHandler, RequestHandler } from "express";
 
+import { appEnv } from "@/config";
+import { ApiError } from "@/utils";
+
 const globalErrHandler: ErrorRequestHandler = (err, _req, res, _) => {
-  console.log("Invoked the error handeler");
-  // If the error is not an instance of ApiError, convert it into one
+  // If the error is not an instance of ApiError, then convert it into one
   if (!(err instanceof ApiError)) {
     err = new ApiError(500, err.message || "Internal Server Error");
   }
 
   const statusCode = err.statusCode || 500;
-  const status = statusCode >= 500 ? "error" : "fail"; // Fail for 4xx, Error for 5xx
+  const status = statusCode >= 500 ? "error" : "fail";
 
   res.status(statusCode).json({
     status,
@@ -23,7 +23,7 @@ const globalErrHandler: ErrorRequestHandler = (err, _req, res, _) => {
 
 // Not Found route handler
 const notFoundErr: RequestHandler = (req) => {
-  throw new ApiError(404, `Not Found - ${req.originalUrl} on the server`);
+  throw new ApiError(404, "Route not found", [`Cannot find ${req.originalUrl}`]);
 };
 
 export { globalErrHandler, notFoundErr };

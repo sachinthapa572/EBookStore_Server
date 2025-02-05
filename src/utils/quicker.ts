@@ -1,7 +1,7 @@
 import { appEnv } from "@/config/env";
 import os from "os";
 
-export default {
+export const quicker = {
   getSystemHealth: () => {
     return {
       cpuUsage: os.loadavg(),

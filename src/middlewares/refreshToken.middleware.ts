@@ -2,40 +2,35 @@ import { Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongoose";
 
-import { appEnv } from "@/config/env";
+import { appEnv } from "@/config";
 import { cookiesOptions } from "@/constant";
-import ApiError from "@/utils/ApiError";
-import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
+import { ApiError, generateAccessTokenAndRefreshToken } from "@/utils";
 
-const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
-  // Extract access token and refresh token from the request
+export const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
   const { accessToken, refreshToken } = getTokensFromRequest(req);
 
-  // Check if access token is missing but refresh token exists
   if (!accessToken && refreshToken) {
     try {
-      // Verify the refresh token and extract the user ID
       const { _id } = await verifyRefreshToken(refreshToken);
 
-      // Generate new access token and refresh token
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
         await generateAccessTokenAndRefreshToken(_id);
 
-      // Set the new tokens in the response
       setTokensInResponse(res, newAccessToken, newRefreshToken);
-
-      // Set the new access token in the request
       req.cookies.accessToken = newAccessToken;
     } catch (error) {
-      // Handle token verification error
-      next(new ApiError(401, "Unauthorized: Unable to refresh token"));
+      if (error instanceof jwt.TokenExpiredError) {
+        return next(new ApiError(401, "Authentication failed: Refresh token has expired"));
+      } else if (error instanceof jwt.JsonWebTokenError) {
+        return next(new ApiError(403, "Authentication failed: Invalid refresh token"));
+      } else {
+        return next(new ApiError(500, "Internal server error: Token refresh failed"));
+      }
     }
   }
 
   next();
 };
-
-export default refreshTokenMiddleware;
 
 // Helper function to extract tokens from the request
 function getTokensFromRequest(req: Request): {

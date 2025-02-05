@@ -1,5 +1,5 @@
-import UserModel from "@/model/user/user.model";
-import ApiError from "./ApiError";
+import { UserModel } from "@/model";
+import { ApiError } from "./";
 import { ObjectId } from "mongoose";
 
 type GTR = (userId: ObjectId) => Promise<{

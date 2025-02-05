@@ -1,3 +1,5 @@
+import { Router } from "express";
+
 import {
   generateAuthLink,
   logout,
@@ -5,11 +7,8 @@ import {
   updateProfile,
   verifyAuthToken,
 } from "@/controllers";
-import { fileParser } from "@/middlewares/file.middelware";
-import { isAuth } from "@/middlewares/isAuth.middleware";
-import { validater } from "@/middlewares/validator.middlewares";
-import { emailschema, newUserSchema } from "@/validators/auth/auth.validation";
-import { Router } from "express";
+import { fileParser, isAuth, validater } from "@/middlewares";
+import { emailschema, newUserSchema } from "@/validators";
 
 const authRouter = Router();
 

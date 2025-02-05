@@ -61,6 +61,7 @@ const bookHistorySchema = new Schema<BookHistoryDoc>(
   { timestamps: true }
 );
 
-const BookHistoryModel = model("BookHistory", bookHistorySchema);
-
-export default BookHistoryModel as Model<BookHistoryDoc>;
+export const BookHistoryModel = model<BookHistoryDoc>(
+  "BookHistory",
+  bookHistorySchema
+) as Model<BookHistoryDoc>;

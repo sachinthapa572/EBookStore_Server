@@ -7,12 +7,8 @@ import {
   getBookPublicsDetails,
   updateBookDetails,
 } from "@/controllers";
-import { fileParser } from "@/middlewares/file.middelware";
-import { isAuth } from "@/middlewares/isAuth.middleware";
-import { isAuthor } from "@/middlewares/isAuthor.middleware";
-import { validater } from "@/middlewares/validator.middlewares";
-
-import { newBookSchema, updateBookSchema } from "@/validators/book/book.validation";
+import { fileParser, isAuth, isAuthor, validater } from "@/middlewares";
+import { newBookSchema, updateBookSchema } from "@/validators";
 
 const bookRotuer = Router();
 
