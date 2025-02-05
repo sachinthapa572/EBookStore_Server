@@ -15,7 +15,6 @@ import logger from "@/logger/winston.logger";
 import path from "path";
 import { RequestHandler } from "express";
 import UserModel from "@/model/user/user.model";
-import { promise } from "zod";
 
 interface QueryType {
   author?: string;

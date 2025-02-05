@@ -1,12 +1,13 @@
 import { appEnv } from "@/config/env";
 import { Model, model, ObjectId, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
+import { ROLES, RoleType } from "@/enum/role.enum";
 
 export interface userDoc {
   _id: ObjectId;
   username?: string;
   email: string;
-  role: "user" | "author";
+  role: RoleType;
   isVerified: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -39,11 +40,10 @@ const userSchema = new Schema<userDoc, {}, Methods>(
       trim: true,
       index: true,
     },
-
     role: {
       type: String,
-      enum: ["user", "author"],
-      default: "user",
+      enum: [ROLES.ADMIN, ROLES.USER, ROLES.AUTHOR],
+      default: ROLES.USER,
     },
     isVerified: {
       type: Boolean,

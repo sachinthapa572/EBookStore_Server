@@ -1,3 +1,4 @@
+import { RoleType } from "@/enum/role.enum";
 import { File } from "formidable";
 import { ObjectId } from "mongoose";
 
@@ -8,10 +9,11 @@ declare global {
         _id: ObjectId;
         username?: string;
         email: string;
-        role: "user" | "author";
+        role: RoleType;
         signedUp: boolean;
         avatar?: string;
         authorId?: ObjectId;
+        role: string;
       };
       // files?: { [key: string]: File | File[] };
       files: Record<string, File | File[]>;

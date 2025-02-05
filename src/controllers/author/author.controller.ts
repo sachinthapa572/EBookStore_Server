@@ -1,4 +1,5 @@
 import { HttpStatusCode } from "@/constant";
+import { ROLES } from "@/enum/role.enum";
 import AuthorModel from "@/model/author/author.model";
 import UserModel from "@/model/user/user.model";
 import { RequestAuthorHandler } from "@/types";
@@ -20,7 +21,7 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res) => {
   }
 
   // Check if user is already an author
-  if (user.role === "author") {
+  if (user.role === ROLES.AUTHOR) {
     throw new ApiError(HttpStatusCode.Forbidden, "User is already an author");
   }
 
@@ -42,7 +43,7 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res) => {
   await newAuthor.save();
 
   // Update the user's role and authorId
-  await UserModel.findByIdAndUpdate(user._id, { role: "author", authorId: newAuthor._id });
+  await UserModel.findByIdAndUpdate(user._id, { role: ROLES.AUTHOR, authorId: newAuthor._id });
 
   res
     .status(201)

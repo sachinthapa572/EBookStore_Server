@@ -118,7 +118,7 @@ export const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(HttpStatusCode.OK, { profile: req.user }));
 });
 
-export const logout: RequestHandler = asyncHandler(async (req, res) => {
+export const logout: RequestHandler = asyncHandler(async (_req, res) => {
   res.clearCookie("accessToken").clearCookie("refreshToken").send();
 });
 
