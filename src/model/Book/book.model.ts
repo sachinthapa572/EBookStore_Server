@@ -31,7 +31,6 @@ const bookSchema = new Schema<BookDoc>(
     },
     title: {
       type: String,
-
       trim: true,
       lowercase: true,
     },

@@ -9,6 +9,8 @@ import routes from "@/routes/routes";
 import { globalErrHandler, notFoundErr, refreshTokenMiddleware } from "@/middlewares";
 import { corsOptions, limiter } from "@/constant";
 import morganMiddleware from "@/logger/morgan.logger";
+import { getGeneratedCredentials, seedUsers } from "@/seeds/user.seeds";
+import seedAuthorData from "@/seeds/author.seed";
 
 const app: Express = express();
 
@@ -30,6 +32,11 @@ app.use("/public", express.static(path.join(path.resolve(__dirname, "../"), "../
 
 // Routes
 app.use("/api/v1", routes);
+
+// * Seeding
+app.get("/api/v1/seed/generated-credentials", getGeneratedCredentials);
+app.post("/api/v1/seed/user", seedUsers);
+app.post("/api/v1/seed/author", seedAuthorData);
 
 // Error middleware
 app.use(notFoundErr, globalErrHandler);

@@ -10,23 +10,27 @@ import {
   generateAccessTokenAndRefreshToken,
   formatUserProfile,
   updateAvatarToCloudinary,
+  asyncHandlerWithTransaction as asyncHandlerT,
 } from "@/utils";
 import { appEnv } from "@/config";
 import { cookiesOptions, HttpStatusCode } from "@/constant";
 import { EmailTemplate, mailService } from "@/services/email.service";
 
-const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
+const generateAuthLink: RequestHandler = asyncHandlerT(async (req, res) => {
   const { email } = req.body;
+  const session = res.locals.session;
 
   // Use findOneAndUpdate to create or update the user
   const user = await UserModel.findOneAndUpdate(
     { email },
     { email },
     { upsert: true, new: true }
-  ).lean();
+  )
+    .session(session)
+    .lean();
 
   // Remove the existing verification token
-  await VerificationTokenModel.deleteOne({ user: user._id });
+  await VerificationTokenModel.deleteOne({ user: user._id }).session(session);
 
   // Generate a new verification token
   const verificationToken = await VerificationTokenModel.create({
@@ -49,7 +53,7 @@ const generateAuthLink: RequestHandler = asyncHandler(async (req, res) => {
       HttpStatusCode.OK,
       {
         email: user.email,
-        link: `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`,
+        link: `${appEnv.SERVER_URL}/auth/verify?userId=${verificationToken.token}`,
       },
       "Verification link has been sent to your email address. Please check your inbox."
     )

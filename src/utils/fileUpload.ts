@@ -1,8 +1,10 @@
-import cloudinary from "@/cloud/cloudinary";
-import { bookstoragePath, photoStoragePath } from "@/constant";
-import { File } from "formidable";
 import fs from "fs";
 import path from "path";
+import { File } from "formidable";
+
+import cloudinary from "@/cloud/cloudinary";
+import { bookstoragePath, photoStoragePath } from "@/constant";
+import logger from "./logger";
 
 const updateAvatarToCloudinary = async (file: File, avatarId?: string) => {
   if (avatarId) {
@@ -75,9 +77,16 @@ const uploadImageTolocalDir = async (
 
 const deleteFileFromLocalDir = (filePath: string) => {
   if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
+    try {
+      fs.unlinkSync(filePath);
+      logger.info(`File deleted from ${filePath}`);
+    } catch (err: any) {
+      logger.error(`Error while deleting file from ${filePath}`, {
+        error: err.message,
+      });
+    }
   }
-  console.log("File deleted successfully");
+  logger.info(`No file to delete ${filePath}`);
 };
 
 // c_thumb,g_auto,h_800,w_800/co_rgb:921919,l_text:times%20new%20roman_300_bold_normal_left:S/fl_layer_apply,g_south_east/f8uxwzs9pyigbyjgffja
