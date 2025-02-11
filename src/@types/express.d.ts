@@ -18,5 +18,8 @@ declare global {
       // files?: { [key: string]: File | File[] };
       files: Record<string, File | File[]>;
     }
+    interface Locals {
+      session?: mongoose.ClientSession;
+    }
   }
 }
