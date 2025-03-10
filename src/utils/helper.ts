@@ -21,4 +21,4 @@ function formatFileSize(bytes: number) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
-export { formatUserProfile, formatFileSize };
+export { formatFileSize, formatUserProfile };

@@ -1,16 +1,16 @@
-import express, { Express } from "express";
-import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import requestIp from "request-ip";
 import cors from "cors";
+import express, { Express, Request } from "express";
+import helmet from "helmet";
 import path from "path";
+import requestIp from "request-ip";
 
-import routes from "@/routes/routes";
-import { globalErrHandler, notFoundErr, refreshTokenMiddleware } from "@/middlewares";
-import { corsOptions, limiter } from "@/constant";
+import { corsOptions, generateToken, limiter } from "@/constant";
 import morganMiddleware from "@/logger/morgan.logger";
-import { getGeneratedCredentials, seedUsers } from "@/seeds/user.seeds";
+import { globalErrHandler, notFoundErr, refreshTokenMiddleware } from "@/middlewares";
+import routes from "@/routes/routes";
 import seedAuthorData from "@/seeds/author.seed";
+import { getGeneratedCredentials, seedUsers } from "@/seeds/user.seeds";
 
 const app: Express = express();
 
@@ -22,7 +22,7 @@ app.use(
   limiter,
   express.json({ limit: "16kb" }),
   express.urlencoded({ extended: true, limit: "16kb" }),
-  cookieParser(),
+  cookieParser("THis is the secret key"),
   helmet(),
   refreshTokenMiddleware
 );
@@ -30,8 +30,14 @@ app.use(
 // Serve static files
 app.use("/public", express.static(path.join(path.resolve(__dirname, "../"), "../public")));
 
+
 // Routes
 app.use("/api/v1", routes);
+app.use("/api/v1/csrf", (req: Request, res) => {
+	const csrf = generateToken(req, res);
+	res.json({ csrf });
+});
+
 
 // * Seeding
 app.get("/api/v1/seed/generated-credentials", getGeneratedCredentials);
@@ -42,3 +48,4 @@ app.post("/api/v1/seed/author", seedAuthorData);
 app.use(notFoundErr, globalErrHandler);
 
 export { app };
+

@@ -1,10 +1,10 @@
 import { appEnv } from "@/config/env";
-import mongoose, { Model, model, ObjectId, Schema } from "mongoose";
-import jwt from "jsonwebtoken";
 import { ROLES, RoleType } from "@/enum/role.enum";
+import jwt from "jsonwebtoken";
+import { Model, model, ObjectId, Schema } from "mongoose";
 
 export interface userDoc {
-  _id: mongoose.Types.ObjectId;
+  _id: ObjectId;
   username?: string;
   email: string;
   role: RoleType;

@@ -1,20 +1,20 @@
-import { ObjectId } from "mongoose";
-import { RequestHandler } from "express";
 import crypto from "crypto";
+import { RequestHandler } from "express";
+import { ObjectId } from "mongoose";
 
-import { userDoc, UserModel, VerificationTokenModel } from "@/model";
-import {
-  ApiResponse,
-  ApiError,
-  asyncHandler,
-  generateAccessTokenAndRefreshToken,
-  formatUserProfile,
-  updateAvatarToCloudinary,
-  asyncHandlerWithTransaction as asyncHandlerT,
-} from "@/utils";
 import { appEnv } from "@/config";
 import { cookiesOptions, HttpStatusCode } from "@/constant";
+import { userDoc, UserModel, VerificationTokenModel } from "@/model";
 import { EmailTemplate, mailService } from "@/services/email.service";
+import {
+    ApiError,
+    ApiResponse,
+    asyncHandler,
+    asyncHandlerWithTransaction as asyncHandlerT,
+    formatUserProfile,
+    generateAccessTokenAndRefreshToken,
+    updateAvatarToCloudinary,
+} from "@/utils";
 
 const generateAuthLink: RequestHandler = asyncHandlerT(async (req, res) => {
   const { email } = req.body;
@@ -95,7 +95,7 @@ const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
 
   // Generate new access and refresh tokens for the user
   const { refreshToken, accessToken } = await generateAccessTokenAndRefreshToken(
-    user._id as ObjectId
+    user._id as unknown as ObjectId
   );
 
   // Set the access token in Redis
@@ -163,4 +163,5 @@ const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
     );
 });
 
-export { generateAuthLink, verifyAuthToken, ProfileInfo, logout, updateProfile };
+export { generateAuthLink, logout, ProfileInfo, updateProfile, verifyAuthToken };
+
