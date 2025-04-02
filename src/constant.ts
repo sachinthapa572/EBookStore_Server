@@ -23,6 +23,7 @@ export enum HttpStatusCode {
     SERVICEUNAVAILABLE = 503,
     TOO_MANY_REQUESTS = 429,
     UnprocessableEntity = 423,
+    CONFLICT = 409,
 }
 // { [key in HttpStatusCode]: string }
 export const statusMessages: Record<HttpStatusCode, string> = {
@@ -36,6 +37,7 @@ export const statusMessages: Record<HttpStatusCode, string> = {
     [HttpStatusCode.TOO_MANY_REQUESTS]: "Too Many Requests",
     [HttpStatusCode.Created]: "Created",
     [HttpStatusCode.UnprocessableEntity]: "Unprocessable Entity",
+    [HttpStatusCode.CONFLICT]: "Conflict",
 };
 
 export const cookiesOptions = {
@@ -86,7 +88,7 @@ export const csrfOptions: DoubleCsrfConfigOptions = {
         message: "Invalid CSRF token",
         statusCode: HttpStatusCode.Forbidden,
         code: "invalid_csrf_token",
-        
+
     }
 
 };

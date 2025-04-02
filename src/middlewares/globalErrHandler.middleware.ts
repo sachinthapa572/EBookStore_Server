@@ -4,7 +4,7 @@ import { appEnv } from "@/config";
 import { IApiError } from "@/types";
 import { ApiError } from "@/utils";
 
-type TError = IApiError & Error ;
+type TError = IApiError & Error;
 
 const globalErrHandler: ErrorRequestHandler = (err: TError, _req, res, _) => {
 
@@ -22,6 +22,7 @@ const globalErrHandler: ErrorRequestHandler = (err: TError, _req, res, _) => {
         success: err.success,
         errors: err.errors,
         stack: appEnv.NODE_ENV === "production" ? undefined : err.stack,
+        timestamp: new Date().toISOString(),
     });
 };
 
@@ -31,4 +32,10 @@ const notFoundErr: RequestHandler = (req) => {
 };
 
 export { globalErrHandler, notFoundErr };
+
+
+
+
+
+
 

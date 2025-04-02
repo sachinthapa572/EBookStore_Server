@@ -16,15 +16,15 @@ const app: Express = express();
 
 // Global middlewares
 app.use(
-  morganMiddleware,
-  cors(corsOptions),
-  requestIp.mw(),
-  limiter,
-  express.json({ limit: "16kb" }),
-  express.urlencoded({ extended: true, limit: "16kb" }),
-  cookieParser("THis is the secret key"),
-  helmet(),
-  refreshTokenMiddleware
+    morganMiddleware,
+    cors(corsOptions),
+    requestIp.mw(),
+    limiter,
+    express.json({ limit: "16kb" }),
+    express.urlencoded({ extended: true, limit: "16kb" }),
+    cookieParser(),
+    helmet(),
+    refreshTokenMiddleware
 );
 
 // Serve static files
@@ -34,8 +34,8 @@ app.use("/public", express.static(path.join(path.resolve(__dirname, "../"), "../
 // Routes
 app.use("/api/v1", routes);
 app.use("/api/v1/csrf", (req: Request, res) => {
-	const csrf = generateToken(req, res);
-	res.json({ csrf });
+    const csrf = generateToken(req, res);
+    res.json({ csrf });
 });
 
 
@@ -45,7 +45,8 @@ app.post("/api/v1/seed/user", seedUsers);
 app.post("/api/v1/seed/author", seedAuthorData);
 
 // Error middleware
-app.use(notFoundErr, globalErrHandler);
+app.use(notFoundErr);
+app.use(globalErrHandler);
 
 export { app };
 
