@@ -1,7 +1,7 @@
-import dotenvFlow from "dotenv-flow";
+import env from "dotenv";
 import { z } from "zod";
 
-dotenvFlow.config();
+env.config();
 
 // Define schema using zod
 const envSchema = z.object({

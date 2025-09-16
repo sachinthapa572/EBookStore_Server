@@ -9,8 +9,6 @@ import morganMiddleware from "@/logger/morgan.logger";
 import { globalErrHandler, notFoundErr } from "@/middlewares/globalErrHandler.middleware";
 import { refreshTokenMiddleware } from "@/middlewares/refreshToken.middleware";
 import routes from "@/routes/routes";
-import seedAuthorData from "@/seeds/author.seed";
-import { getGeneratedCredentials, seedUsers } from "@/seeds/user.seeds";
 
 const app: Express = express();
 
@@ -26,7 +24,7 @@ app.use(
 );
 
 // Serve static files
- app.use("/public", express.static(path.join(path.resolve(__dirname, "../"), "../public")));
+app.use("/public", express.static(path.join(path.resolve(__dirname, "../"), "../public")));
 
 // Routes
 app.use("/api/v1", routes);
@@ -34,11 +32,6 @@ app.use("/api/v1/csrf", (req: Request, res) => {
   const csrf = generateCsrfToken(req, res);
   res.json({ csrf });
 });
-
-// * Seeding
-app.get("/api/v1/seed/generated-credentials", getGeneratedCredentials);
-app.post("/api/v1/seed/user", seedUsers);
-app.post("/api/v1/seed/author", seedAuthorData);
 
 // Error middleware
 app.use(notFoundErr);
