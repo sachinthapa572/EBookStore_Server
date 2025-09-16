@@ -1,29 +1,20 @@
-import { RequestHandler } from "express";
-import slugify from "slugify";
 import path from "path";
+import slugify from "slugify";
 
-import { BookDoc, BookModel, AuthorModel, UserModel } from "@/model";
+import { AuthorModel, BookDoc, BookModel, UserModel } from "@/model";
 import { customReqHandler, newBookBody, PopulatedBook, updateBookType } from "@/types";
 import {
   ApiError,
+  ApiResponse,
   asyncHandler,
   deleteFileFromLocalDir,
-  uploadImageTolocalDir,
-  uploadBookTolocalDir,
   formatFileSize,
-  ApiResponse,
+  uploadBookTolocalDir,
+  uploadImageTolocalDir,
 } from "@/utils";
 import logger from "@/utils/logger";
-
-interface QueryType {
-  author?: string;
-  title?: { $regex: string; $options: string };
-  language?: { $in: string[] };
-  genre?: { $in: string[] };
-  publicationName?: { $in: string[] };
-  publishedAt?: Date;
-  price?: { $gte: number; $lte: number };
-}
+import { RequestHandler } from "express";
+import { BookDetails, QuerFilterOptions } from "./BookControlle.type";
 
 const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, res) => {
   const { body, files, user } = req;
@@ -43,6 +34,8 @@ const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, re
   if (!book || Array.isArray(book) || book.mimetype !== "application/epub+zip") {
     throw new ApiError(400, "Invalid book File");
   }
+
+  console.log(user.authorId, "user author id");
 
   // Create new book
   const newBook = new BookModel<BookDoc>({
@@ -79,13 +72,13 @@ const createNewBook: customReqHandler<newBookBody> = asyncHandler(async (req, re
   await AuthorModel.findByIdAndUpdate(user.authorId, { $addToSet: { books: newBook._id } });
 
   // Save new book
-  const books = await newBook.save();
-  const bookObject = books.toObject();
+  const books = (await newBook.save()).toObject();
+
   const newBookResponse = {
-    ...bookObject,
+    ...books,
     fileInfo: {
-      ...bookObject.fileInfo,
-      id: `http://localhost:3000/public/books/${bookObject.fileInfo.id}`,
+      ...books.fileInfo,
+      id: `http://localhost:3000/public/books/${books.fileInfo.id}`,
     },
   };
   logger.info(`Book "${newBookResponse.title}" created successfully`);
@@ -163,14 +156,13 @@ const updateBookDetails: customReqHandler<updateBookType> = asyncHandler(async (
 });
 
 const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  const purchasedBooks = await UserModel.findOne({ _id }).populate<{ books: PopulatedBook[] }>(
-    {
-      path: "books",
-      select: "author title cover slug",
-      populate: { path: "author", select: "slug name" },
-    }
-  );
+  const purchasedBooks = await UserModel.findById(req.user._id).populate<{
+    books: PopulatedBook[];
+  }>({
+    path: "books",
+    select: "author title cover slug",
+    populate: { path: "author", select: "slug name" },
+  });
 
   const formattedBooks = purchasedBooks?.books.map((book) => ({
     id: book._id,
@@ -187,76 +179,86 @@ const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
     );
 });
 
-const getBookPublicsDetails: RequestHandler = asyncHandler(async (req, res) => {
-  const bookDetails = await BookModel.findOne({ _id: req.params?.bookslug }).populate<{
-    author: PopulatedBook["author"];
-  }>({ path: "author", select: "name slug" });
+const getBookPublicsDetails: RequestHandler<{
+  id: string;
+}> = asyncHandler(async (req, res) => {
+  const bookDetails = await BookModel.findById(req.params.id)
+    .populate({
+      path: "author",
+      select: "name slug _id",
+    })
+    .lean<BookDetails>();
 
   if (!bookDetails) {
     throw new ApiError(404, "Book not found");
   }
 
-  const { _id, title, cover, author, slug, description, language, publicationName } =
-    bookDetails;
   res.status(200).json(
     new ApiResponse(
       200,
       {
-        id: _id,
-        title,
-        cover: cover?.url,
-        author: { name: author.name, slug: author.slug },
-        slug,
-        description,
-        language,
-        publicationName,
+        bookDetails,
       },
       "Book details retrieved successfully"
     )
   );
 });
 
-const getAllAvailableBooksController = asyncHandler(async (req, res) => {
-  const filter = {
-    author: req.query.author as string | undefined,
-    title: req.query.title ? (req.query.title as string) : undefined,
-    language: req.query.language ? (req.query.language as string)?.split(",") : undefined,
-    genre: req.query.genre ? (req.query.genre as string)?.split(",") : undefined,
-    publicationName: req.query.publicationName
-      ? (req.query.publicationName as string)?.split(",")
-      : undefined,
-    publishedAt: req.query.publishedAt as Date | undefined,
-    price: req.query.price ? (req.query.price as string) : undefined,
-  };
+const getAllAvailableBooksController: RequestHandler<
+  {},
+  {},
+  {},
+  Partial<QuerFilterOptions>
+> = asyncHandler(async (req, res) => {
+  const {
+    author,
+    title,
+    language,
+    genre,
+    publicationName,
+    publishedAt,
+    price,
+    pageSize,
+    pageNumber,
+  } = req.query;
 
+  // Handle pagination
   const pagination = {
-    pageSize: parseInt(req.query.pageSize as string) || 10,
-    pageNumber: parseInt(req.query.pageNumber as string) || 1,
+    pageSize: parseInt(pageSize?.toString() || "10"),
+    pageNumber: parseInt(pageNumber?.toString() || "1"),
   };
-  const query: QueryType = {
-    ...(filter.author && { author: filter.author }),
-    ...(filter.title && { title: { $regex: filter.title, $options: "i" } }),
-    ...(filter.language && { language: { $in: filter.language } }),
-    ...(filter.genre && { genre: { $in: filter.genre } }),
-    ...(filter.publicationName && { publicationName: { $in: filter.publicationName } }),
-    ...(filter.publishedAt && { publishedAt: filter.publishedAt }),
-    ...(filter.price && {
-      price: {
-        $gte: parseInt(filter.price.split("-")[0]),
-        $lte: parseInt(filter.price.split("-")[1]),
-      },
-    }),
-  };
+  const skip = (pagination.pageNumber - 1) * pagination.pageSize;
 
-  const { pageSize, pageNumber } = pagination;
-  const skip = (pageNumber - 1) * pageSize;
+  // Build the query object dynamically
+  const query: Record<string, any> = {};
 
+  if (author) query.author = author;
+  if (title) query.title = { $regex: title, $options: "i" };
+  if (language) query.language = { $in: language.split(",") };
+  if (genre) query.genre = { $in: genre.split(",") };
+  if (publicationName) query.publicationName = { $in: publicationName.split(",") };
+
+  if (publishedAt) {
+    const date = new Date(publishedAt);
+    if (!isNaN(date.getTime())) {
+      query.publishedAt = date;
+    }
+  }
+
+  if (price) {
+    const [minPrice, maxPrice] = price.split("-").map(Number);
+    if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+      query.price = { $gte: minPrice, $lte: maxPrice };
+    }
+  }
+
+  // Fetch data from database
   const [books, totalCount] = await Promise.all([
-    await BookModel.find(query).skip(skip).limit(pageSize),
+    BookModel.find(query).skip(skip).limit(pagination.pageSize),
     BookModel.countDocuments(query),
   ]);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const totalPages = Math.ceil(totalCount / pagination.pageSize);
 
   res.status(200).json(
     new ApiResponse(
@@ -264,8 +266,8 @@ const getAllAvailableBooksController = asyncHandler(async (req, res) => {
       {
         books,
         pagination: {
-          pageSize,
-          pageNumber,
+          pageSize: pagination.pageSize,
+          pageNumber: pagination.pageNumber,
           totalCount,
           totalPages,
           skip,
@@ -278,8 +280,8 @@ const getAllAvailableBooksController = asyncHandler(async (req, res) => {
 
 export {
   createNewBook,
-  updateBookDetails,
+  getAllAvailableBooksController,
   getAllPurchaseData,
   getBookPublicsDetails,
-  getAllAvailableBooksController,
+  updateBookDetails,
 };

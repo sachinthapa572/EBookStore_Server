@@ -1,22 +1,49 @@
 import { appEnv } from "@/config/env";
 import os from "os";
 
-export const quicker = {
+export interface HealthData {
+  getSystemHealth: () => {
+    cpuUsage: number[];
+    totalMemory: string;
+    freeMemory: string;
+  };
+  getApplicationHealth: () => {
+    environment: string;
+    uptime: string;
+    memoryUsage: {
+      heapTotal: string;
+      heapUsed: string;
+    };
+  };
+  formatMemory: (bytes: number) => string;
+}
+
+export const quicker: Omit<HealthData, "formatMemory"> = {
   getSystemHealth: () => {
     return {
       cpuUsage: os.loadavg(),
-      totalMemory: `${(os.totalmem() / 1024 / 1024).toFixed(2)} MB`,
-      freeMemory: `${(os.freemem() / 1024 / 1024).toFixed(2)} MB`,
+      totalMemory: formatMemory(os.totalmem()),
+      freeMemory: formatMemory(os.freemem()),
     };
   },
   getApplicationHealth: () => {
+    const formatUptime = (seconds: number) => {
+      const minutes = seconds / 60;
+      return minutes >= 1 ? `${minutes.toFixed(2)} Minute` : `${seconds.toFixed(2)} Second`;
+    };
+
     return {
       environment: appEnv.NODE_ENV,
-      uptime: `${process.uptime().toFixed(2)} Second`,
+      uptime: formatUptime(process.uptime()),
       memoryUsage: {
-        heapTotal: `${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)} MB`,
-        heapUsed: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`,
+        heapTotal: formatMemory(process.memoryUsage().heapTotal),
+        heapUsed: formatMemory(process.memoryUsage().heapUsed),
       },
     };
   },
+};
+
+const formatMemory: HealthData["formatMemory"] = (bytes: number): string => {
+  const gb = bytes / 1024 / 1024 / 1024;
+  return gb >= 1 ? `${gb.toFixed(2)} GB` : `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 };

@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
-import { appEnv } from "./env";
 import { DB_NAME } from "@/constant";
 import logger from "@/logger/winston.logger";
+import mongoose from "mongoose";
+import { appEnv } from "./env";
 
 const uri = `${appEnv.MONGODB_URI}/${DB_NAME}`;
 if (!uri) {

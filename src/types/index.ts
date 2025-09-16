@@ -6,40 +6,40 @@ import { RequestHandler, Response } from "express";
 import { z } from "zod";
 
 export interface SendMailOptionsI {
-    email: string;
-    emailTemplate: string;
-    res: Response;
+  email: string;
+  emailTemplate: string;
+  res: Response;
 }
 
 export interface IApiResponse<T> {
-    statusCode: number;
-    data?: T;
-    message: string;
-    success: boolean;
+  statusCode: number;
+  data?: T;
+  message: string;
+  success: boolean;
 }
 
 export interface IApiError {
-    statusCode: HttpStatusCode;
-    success: boolean;
-    message: string;
-    errors?: Array<string>;
-    status: string;
-    stack?: string | undefined;
+  statusCode: HttpStatusCode;
+  success: boolean;
+  message: string;
+  errors?: Array<string>;
+  status: string;
+  stack?: string | undefined;
 }
 
 export type PopulatedBook = {
-    cover: {
-        url: string;
-        id: string;
-    };
+  cover: {
+    url: string;
+    id: string;
+  };
+  _id: string;
+  author: {
     _id: string;
-    author: {
-        _id: string;
-        name: string;
-        slug: string;
-    };
-    title: string;
+    name: string;
     slug: string;
+  };
+  title: string;
+  slug: string;
 };
 
 type AuthorHandlerBody = z.infer<typeof newAuthorSchema>;
@@ -49,3 +49,4 @@ export type newReviewType = z.infer<typeof newReviewSchema>;
 
 export type RequestAuthorHandler = RequestHandler<{}, {}, AuthorHandlerBody>;
 export type customReqHandler<T> = RequestHandler<{}, {}, T>;
+export type scustomReqHandler<P = {}, B = {}, R = any, Q = {}> = RequestHandler<P, R, B, Q>;

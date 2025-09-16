@@ -89,4 +89,4 @@ const getAuthorDetails: RequestHandler = asyncHandler(async (req, res) => {
   );
 });
 
-export { registerAuthor, getAuthorDetails };
+export { getAuthorDetails, registerAuthor };

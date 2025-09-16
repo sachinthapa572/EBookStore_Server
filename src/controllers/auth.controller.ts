@@ -76,7 +76,9 @@ const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
 
   if (!verificationToken || !verificationToken.user) {
     throw new ApiError(HttpStatusCode.BadRequest, "Invalid or expired verification token.");
-  }
+    }
+
+    verificationToken._id;
 
   const user = verificationToken.user;
 

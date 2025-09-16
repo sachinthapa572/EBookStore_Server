@@ -27,7 +27,8 @@ const bookSchema = new Schema<BookDoc>(
   {
     author: {
       type: Schema.Types.ObjectId,
-      ref: "author",
+      ref: "Author",
+      required: true,
     },
     title: {
       type: String,

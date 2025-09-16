@@ -15,13 +15,13 @@ routes.use("/review", reviewRouter);
 
 // health check
 routes.get("/health", isAuth, doubleCsrfProtection, (req, res) => {
-    roleGuard(req, ROLES.ADMIN);
-    const healthData = {
-        application: quicker.getApplicationHealth(),
-        system: quicker.getSystemHealth(),
-        timestamp: new Date().toLocaleString(),
-    };
-    res.status(200).json({ message: "Server is running ok", data: healthData });
+  roleGuard(req, ROLES.ADMIN);
+  const healthData = {
+    application: quicker.getApplicationHealth(),
+    system: quicker.getSystemHealth(),
+    timestamp: new Date().toLocaleString(),
+  };
+  res.status(200).json({ message: "Server is running ok", data: healthData });
 });
 
 export default routes;

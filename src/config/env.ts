@@ -59,9 +59,9 @@ const envSchema = z.object({
     }),
 
     // File storage settings
-    UPLOADTHING_API_KEY: z.string({
-        required_error: "UPLOADTHING_API_KEY is required",
-    }),
+    // UPLOADTHING_API_KEY: z.string({
+    //     required_error: "UPLOADTHING_API_KEY is required",
+    // }),
 });
 
 // Parse and validate environment variables
