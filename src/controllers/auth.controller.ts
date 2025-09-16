@@ -40,10 +40,12 @@ const generateAuthLink: CustomRequestHandler<EmailType> = asyncHandler(async (re
   }
 
   // Send the verification email
-  const emailTemplate = EmailTemplate.VerificationTemplate(
-    `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`
-  );
-  await mailService.sendVerificatinMail({ email, res, emailTemplate });
+  if (appEnv.NODE_ENV === "production") {
+    const emailTemplate = EmailTemplate.VerificationTemplate(
+      `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`
+    );
+    await mailService.sendVerificatinMail({ email, res, emailTemplate });
+  }
 
   res.status(HttpStatusCode.OK).json(
     new ApiResponse(

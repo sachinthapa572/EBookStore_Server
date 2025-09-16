@@ -5,7 +5,7 @@ import type { Request } from "express";
 import { appEnv } from "./config/env";
 import path from "node:path";
 
-export const DB_NAME: string = "E-BookStore";
+export const DB_NAME: string = "E_Book_Store";
 export const HttpStatusCode = {
   Created: 201,
   OK: 200,

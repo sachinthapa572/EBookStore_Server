@@ -19,6 +19,7 @@ import { AuthorModel } from "@/model/author/author.model";
 import { type BookDoc, BookModel } from "@/model/Book/book.model";
 import { UserModel } from "@/model/user/user.model";
 import type { PopulatedBook } from "@/types";
+import type { UuidGType } from "@/validators";
 import type { NewBookType, UpdateBookType } from "@/validators/book/book.validation";
 
 // Helper function to build query filters
@@ -240,30 +241,30 @@ const getAllPurchaseData: RequestHandler = asyncHandler(async (req, res) => {
     );
 });
 
-const getBookPublicsDetails: RequestHandler<{
-  id: string;
-}> = asyncHandler(async (req, res) => {
-  const bookDetails = await BookModel.findById(req.params.id)
-    .populate({
-      path: "author",
-      select: "name slug _id",
-    })
-    .lean<BookDetails>();
+const getBookPublicsDetails: CustomRequestHandler<object, UuidGType<["id"]>> = asyncHandler(
+  async (req, res) => {
+    const bookDetails = await BookModel.findById(req.params.id)
+      .populate({
+        path: "author",
+        select: "name slug _id",
+      })
+      .lean<BookDetails>();
 
-  if (!bookDetails) {
-    throw new ApiError(404, "Book not found");
+    if (!bookDetails) {
+      throw new ApiError(404, "Book not found");
+    }
+
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          bookDetails,
+        },
+        "Book details retrieved successfully"
+      )
+    );
   }
-
-  res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        bookDetails,
-      },
-      "Book details retrieved successfully"
-    )
-  );
-});
+);
 
 const getAllAvailableBooksController: RequestHandler<
   object,

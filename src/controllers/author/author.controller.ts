@@ -1,4 +1,3 @@
-import type { RequestHandler } from "express";
 import slugify from "slugify";
 
 import { ApiError } from "@/utils/ApiError";
@@ -9,6 +8,7 @@ import { HttpStatusCode } from "@/constant";
 import { ROLES } from "@/enum/role.enum";
 import { AuthorModel } from "@/model/author/author.model";
 import { UserModel } from "@/model/user/user.model";
+import type { UuidGType } from "@/validators";
 import type { NewAuthorType } from "@/validators/author/author.validation";
 
 const registerAuthor: CustomRequestHandler<NewAuthorType> = asyncHandler(async (req, res) => {
@@ -61,39 +61,41 @@ const registerAuthor: CustomRequestHandler<NewAuthorType> = asyncHandler(async (
     );
 });
 
-const getAuthorDetails: RequestHandler = asyncHandler(async (req, res) => {
-  const authorSlug = req.params.slug;
+const getAuthorDetails: CustomRequestHandler<object, UuidGType<["id"]>> = asyncHandler(
+  async (req, res) => {
+    const authorSlug = req.params.id;
 
-  // Check if author slug is provided
-  if (!authorSlug) {
-    throw new ApiError(
-      HttpStatusCode.BadRequest,
-      "Author identifier is required. Please provide a valid author slug."
+    // Check if author slug is provided
+    if (!authorSlug) {
+      throw new ApiError(
+        HttpStatusCode.BadRequest,
+        "Author identifier is required. Please provide a valid author slug."
+      );
+    }
+
+    // Fetch the author
+    const author = await AuthorModel.findOne({ slug: authorSlug });
+    if (!author) {
+      throw new ApiError(
+        HttpStatusCode.NotFound,
+        "Author profile not found. Please verify the author identifier."
+      );
+    }
+
+    // Return the author details
+    res.status(HttpStatusCode.OK).json(
+      new ApiResponse(
+        HttpStatusCode.OK,
+        {
+          id: author._id,
+          name: author.name,
+          about: author.about,
+          socialLinks: author.socialLinks,
+        },
+        "Author details retrieved successfully"
+      )
     );
   }
-
-  // Fetch the author
-  const author = await AuthorModel.findOne({ slug: authorSlug });
-  if (!author) {
-    throw new ApiError(
-      HttpStatusCode.NotFound,
-      "Author profile not found. Please verify the author identifier."
-    );
-  }
-
-  // Return the author details
-  res.status(HttpStatusCode.OK).json(
-    new ApiResponse(
-      HttpStatusCode.OK,
-      {
-        id: author._id,
-        name: author.name,
-        about: author.about,
-        socialLinks: author.socialLinks,
-      },
-      "Author details retrieved successfully"
-    )
-  );
-});
+);
 
 export { getAuthorDetails, registerAuthor };

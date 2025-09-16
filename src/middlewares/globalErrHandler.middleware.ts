@@ -20,6 +20,8 @@ type ErrorType = ApiError | MongoError | Error;
 const globalErrHandler: ErrorRequestHandler = (error: ErrorType, _req, res, _) => {
   let err: ApiError;
 
+  console.log("----Error---", error);
+
   // handle the mongoose error
   if (
     error &&

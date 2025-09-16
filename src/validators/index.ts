@@ -26,9 +26,10 @@ export const rString = (name: string, min = 1, max = 100) => {
     .max(max, `${formattedName} must be at most ${max} character${max > 1 ? "s" : ""} long`);
 };
 export const uuidSchema = (name: string) => {
-  return rString(name).uuid({
-    message: "Invalid UUID",
-  });
+  return rString(name);
+  //    return rString(name).uuid({
+  //     message: "Invalid UUID",
+  //   });
 };
 export const uuidGSchema = <T extends string[]>(...inputNames: T) => {
   const names = inputNames.length === 0 ? (["id"] as T) : inputNames;

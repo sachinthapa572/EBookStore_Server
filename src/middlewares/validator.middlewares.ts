@@ -38,8 +38,12 @@ export const queryValidator: IValidator = (schema) => {
   return (req, res, next) => {
     try {
       const result = schema.safeParse(req.query);
+
       if (result.success) {
-        req.query = result.data;
+        for (const key of Object.keys(req.query)) {
+          delete req.query[key];
+        }
+        Object.assign(req.query, result.data);
         next();
       } else {
         const error = result.error.flatten().fieldErrors;
@@ -64,7 +68,11 @@ export const paramValidator: IValidator = (schema) => {
     try {
       const result = schema.safeParse(req.params);
       if (result.success) {
-        req.params = result.data;
+        // Clear existing params and assign validated data
+        for (const key of Object.keys(req.params)) {
+          delete req.params[key];
+        }
+        Object.assign(req.params, result.data);
         next();
       } else {
         const error = result.error.flatten().fieldErrors;
