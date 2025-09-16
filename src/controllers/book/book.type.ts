@@ -10,7 +10,7 @@ export type QuerFilterOptions = {
   pageNumber: number;
 };
 
-export interface BookDetails {
+export type BookDetails = {
   _id: string;
   title: string;
   slug: string;
@@ -32,15 +32,15 @@ export interface BookDetails {
     id: string;
     url: string;
   };
-}
+};
 
-interface Price {
+type Price = {
   mrp: number;
   sale: number;
-}
+};
 
-interface FileInfo {
+type FileInfo = {
   size: number;
   type: string;
   name: string;
-}
+};

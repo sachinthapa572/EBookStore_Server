@@ -1,4 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 import mongoose from "mongoose";
 
 const asyncHandlerWithTransaction = <T extends RequestHandler>(requestHandler: T): T => {

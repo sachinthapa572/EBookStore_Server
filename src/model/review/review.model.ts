@@ -1,6 +1,6 @@
-import { Model, ObjectId, Schema, model } from "mongoose";
+import { type Model, model, type ObjectId, Schema } from "mongoose";
 
-export interface ReviewDoc {
+export type ReviewDoc = {
   user: ObjectId;
   book: ObjectId;
   rating: number;
@@ -9,7 +9,7 @@ export interface ReviewDoc {
   totalReviews?: number;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
 const reviewSchema = new Schema<ReviewDoc>(
   {

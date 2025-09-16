@@ -1,10 +1,15 @@
-import { Request, RequestHandler, Response } from "express";
+import type { Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
-import { ObjectId } from "mongoose";
+import type { ObjectId } from "mongoose";
 
-import { appEnv } from "@/config";
-import { cookiesOptions } from "@/constant";
-import { ApiError, generateAccessTokenAndRefreshToken } from "@/utils";
+import { ApiError } from "@/utils/ApiError";
+import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
+
+import { appEnv } from "@/config/env";
+import { cookiesOptions, HttpStatusCode } from "@/constant";
+
+// Regex pattern for Bearer token extraction - defined at top level for performance
+export const BEARER_TOKEN_REGEX = /^Bearer\s*/;
 
 export const refreshTokenMiddleware: RequestHandler = async (req, res, next) => {
   const { accessToken, refreshToken } = getTokensFromRequest(req);
@@ -20,12 +25,27 @@ export const refreshTokenMiddleware: RequestHandler = async (req, res, next) => 
       req.cookies.accessToken = newAccessToken;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        return next(new ApiError(401, "Authentication failed: Refresh token has expired"));
-      } else if (error instanceof jwt.JsonWebTokenError) {
-        return next(new ApiError(403, "Authentication failed: Invalid refresh token"));
-      } else {
-        return next(new ApiError(500, "Internal server error: Token refresh failed"));
+        return next(
+          new ApiError(
+            HttpStatusCode.Unauthorized,
+            "Authentication failed: Refresh token has expired"
+          )
+        );
       }
+      if (error instanceof jwt.JsonWebTokenError) {
+        return next(
+          new ApiError(
+            HttpStatusCode.Forbidden,
+            "Authentication failed: Invalid refresh token"
+          )
+        );
+      }
+      return next(
+        new ApiError(
+          HttpStatusCode.InternalServerError,
+          "Internal server error: Token refresh failed"
+        )
+      );
     }
   }
 
@@ -39,14 +59,16 @@ function getTokensFromRequest(req: Request): {
 } {
   return {
     accessToken:
-      req.cookies.accessToken || req.header("Authorization")?.replace(/^Bearer\s*/, ""),
+      req.cookies.accessToken || req.header("Authorization")?.replace(BEARER_TOKEN_REGEX, ""),
     refreshToken: req.cookies.refreshToken || req.header("x-refresh-token"),
   };
 }
 
 // Helper function to verify the refresh token
-async function verifyRefreshToken(refreshToken: string): Promise<{ _id: ObjectId }> {
-  return jwt.verify(refreshToken, appEnv.REFRESH_TOKEN_SECRET) as { _id: ObjectId };
+function verifyRefreshToken(refreshToken: string): { _id: ObjectId } {
+  return jwt.verify(refreshToken, appEnv.REFRESH_TOKEN_SECRET) as {
+    _id: ObjectId;
+  };
 }
 
 // Helper function to set the tokens in the response

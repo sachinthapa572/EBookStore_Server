@@ -1,16 +1,12 @@
-import { appEnv } from "@/config/env";
-import { DB_NAME } from "@/constant";
 import mongoose from "mongoose";
-const uri = `${appEnv.MONGODB_URI}/${DB_NAME}`;
+
+import { DB_URL } from "@/constant";
 
 export default {
   connect: async () => {
-    try {
-      await mongoose.connect(uri as string);
+    await mongoose.connect(DB_URL);
+    console.log("\x1b[32m%s\x1b[0m", "MongoDB connected !!");
 
-      return mongoose.connection;
-    } catch (err) {
-      throw err;
-    }
+    return mongoose.connection;
   },
 };

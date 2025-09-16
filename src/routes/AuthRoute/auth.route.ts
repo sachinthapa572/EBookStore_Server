@@ -6,22 +6,24 @@ import {
   ProfileInfo,
   updateProfile,
   verifyAuthToken,
-} from "@/controllers";
-import { fileParser, isAuth, validater } from "@/middlewares";
-import { emailschema, newUserSchema } from "@/validators";
+} from "@/controllers/auth.controller";
+import { fileParser } from "@/middlewares/file.middelware";
+import { isAuth } from "@/middlewares/isAuth.middleware";
+import { queryValidator, validator } from "@/middlewares/validator.middlewares";
+import { emailschema, newUserSchema, useridsechema } from "@/validators/auth/auth.validation";
 
 const authRouter = Router();
 
-authRouter.post("/generate-link", validater(emailschema), generateAuthLink);
+authRouter.post("/generate-link", validator(emailschema), generateAuthLink);
 
-authRouter.get("/verify", verifyAuthToken);
+authRouter.get("/verify", queryValidator(useridsechema), verifyAuthToken);
 
+authRouter.use(isAuth);
 authRouter
   .route("/profile")
-  .all(isAuth)
   .get(ProfileInfo)
-  .post(fileParser, validater(newUserSchema), updateProfile);
+  .post(fileParser, validator(newUserSchema), updateProfile);
 
-authRouter.get("/logout", isAuth, logout);
+authRouter.get("/logout", logout);
 
 export { authRouter };

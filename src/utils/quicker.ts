@@ -1,7 +1,7 @@
+import os from "node:os";
 import { appEnv } from "@/config/env";
-import os from "os";
 
-export interface HealthData {
+export type HealthData = {
   getSystemHealth: () => {
     cpuUsage: number[];
     totalMemory: string;
@@ -16,7 +16,7 @@ export interface HealthData {
     };
   };
   formatMemory: (bytes: number) => string;
-}
+};
 
 export const quicker: Omit<HealthData, "formatMemory"> = {
   getSystemHealth: () => {

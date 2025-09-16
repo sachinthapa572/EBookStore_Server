@@ -1,31 +1,28 @@
-import { HttpStatusCode } from "@/constant";
-import { newAuthorSchema } from "@/validators/author/author.validation";
-import { newBookSchema, updateBookSchema } from "@/validators/book/book.validation";
-import { newReviewSchema } from "@/validators/review/review.validation";
-import { RequestHandler, Response } from "express";
-import { z } from "zod";
+import type { Response } from "express";
 
-export interface SendMailOptionsI {
+import type { HttpStatusCode } from "@/constant";
+
+export type SendMailOptionsI = {
   email: string;
   emailTemplate: string;
   res: Response;
-}
+};
 
-export interface IApiResponse<T> {
+export type IApiResponse<T> = {
   statusCode: number;
   data?: T;
   message: string;
   success: boolean;
-}
+};
 
-export interface IApiError {
+export type IApiError = {
   statusCode: HttpStatusCode;
   success: boolean;
   message: string;
-  errors?: Array<string>;
+  errors?: string[];
   status: string;
   stack?: string | undefined;
-}
+};
 
 export type PopulatedBook = {
   cover: {
@@ -41,12 +38,3 @@ export type PopulatedBook = {
   title: string;
   slug: string;
 };
-
-type AuthorHandlerBody = z.infer<typeof newAuthorSchema>;
-export type newBookBody = z.infer<typeof newBookSchema>;
-export type updateBookType = z.infer<typeof updateBookSchema>;
-export type newReviewType = z.infer<typeof newReviewSchema>;
-
-export type RequestAuthorHandler = RequestHandler<{}, {}, AuthorHandlerBody>;
-export type customReqHandler<T> = RequestHandler<{}, {}, T>;
-export type scustomReqHandler<P = {}, B = {}, R = any, Q = {}> = RequestHandler<P, R, B, Q>;

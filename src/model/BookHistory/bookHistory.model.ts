@@ -1,6 +1,6 @@
-import { model, Model, ObjectId, Schema } from "mongoose";
+import { type Model, model, type ObjectId, Schema } from "mongoose";
 
-interface BookHistoryDoc {
+type BookHistoryDoc = {
   bookId: ObjectId;
   reader: ObjectId;
   // the lastlocation is the last page the user read in the book
@@ -8,7 +8,7 @@ interface BookHistoryDoc {
   lastReadAt: Date;
   highlights: { selections: string; fill: string; createdAt: Date }[];
   notes: { note: string; createdAt: Date }[];
-}
+};
 const bookHistorySchema = new Schema<BookHistoryDoc>(
   {
     bookId: {

@@ -1,9 +1,12 @@
-import { RoleType } from "@/enum/role.enum";
-import { File } from "formidable";
-import { ObjectId } from "mongoose";
+import type { File } from "formidable";
+import type { ObjectId } from "mongoose";
+
+import type { RoleType } from "@/enum/role.enum";
 
 declare global {
+  // biome-ignore lint/style/noNamespace: test
   namespace Express {
+    // biome-ignore lint/nursery/useConsistentTypeDefinitions: i
     interface Request {
       user: {
         _id: ObjectId;
@@ -18,6 +21,7 @@ declare global {
       // files?: { [key: string]: File | File[] };
       files: Record<string, File | File[]>;
     }
+    // biome-ignore lint/nursery/useConsistentTypeDefinitions: i
     interface Locals {
       session?: mongoose.ClientSession;
     }

@@ -1,22 +1,19 @@
-import fs from "fs";
-import path from "path";
-import { File } from "formidable";
+import type { File } from "formidable";
 
+import logger from "./logger";
+import fs from "node:fs";
+import path from "node:path";
 import cloudinary from "@/cloud/cloudinary";
 import { bookstoragePath, photoStoragePath } from "@/constant";
-import logger from "./logger";
 
 const updateAvatarToCloudinary = async (file: File, avatarId?: string) => {
   if (avatarId) {
-    // if user already has a profile image remove the old first
     await cloudinary.uploader.destroy(avatarId);
   }
 
   const { public_id, secure_url } = await cloudinary.uploader.upload(file.filepath, {
     asset_folder: "BookStore/user/avatar",
-    // asset_folder: `BookStore/${email.split("@")[0]}/user/avatar`,
     resource_type: "auto",
-    // public_id: "custom_id", this is the id given by the user itself
     tags: ["user_avatar"],
     context: "photo=user_avatar",
     width: 300,
@@ -44,7 +41,7 @@ const removefromCloudinary = async (public_id: string) => {
   await cloudinary.uploader.destroy(public_id);
 };
 
-const uploadBookTolocalDir = async (file: File, uniqueFileName: string) => {
+const uploadBookTolocalDir = (file: File, uniqueFileName: string) => {
   if (!fs.existsSync(bookstoragePath)) {
     fs.mkdirSync(bookstoragePath, { recursive: true });
   }
@@ -55,11 +52,7 @@ const uploadBookTolocalDir = async (file: File, uniqueFileName: string) => {
   fs.writeFileSync(filePath, fs.readFileSync(file.filepath));
 };
 
-const uploadImageTolocalDir = async (
-  file: File,
-  uniqueFileName: string,
-  extension: string
-) => {
+const uploadImageTolocalDir = (file: File, uniqueFileName: string, extension: string) => {
   if (!fs.existsSync(photoStoragePath)) {
     fs.mkdirSync(photoStoragePath, { recursive: true });
   }
@@ -80,11 +73,13 @@ const deleteFileFromLocalDir = (filePath: string) => {
     try {
       fs.unlinkSync(filePath);
       logger.info(`File deleted from ${filePath}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       logger.error(`Error while deleting file from ${filePath}`, {
-        error: err.message,
+        error: message,
       });
     }
+    return;
   }
   logger.info(`No file to delete ${filePath}`);
 };

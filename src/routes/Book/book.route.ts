@@ -6,20 +6,23 @@ import {
   getAllPurchaseData,
   getBookPublicsDetails,
   updateBookDetails,
-} from "@/controllers";
-import { fileParser, isAuth, isAuthor, validater } from "@/middlewares";
-import { newBookSchema, updateBookSchema } from "@/validators";
+} from "@/controllers/book/book.controller";
+import { fileParser } from "@/middlewares/file.middelware";
+import { isAuth } from "@/middlewares/isAuth.middleware";
+import { isAuthor } from "@/middlewares/isAuthor.middleware";
+import { paramValidator, validator } from "@/middlewares/validator.middlewares";
+import { uuidGSchema } from "@/validators";
+import { newBookSchema, updateBookSchema } from "@/validators/book/book.validation";
 
-const bookRotuer = Router();
+const booksRoute = Router();
 
-// bookRotuer.use(isAuth, isAuthor);
+booksRoute.get("/all", getAllAvailableBooksController);
 
-const validation = [isAuth, isAuthor];
+// ! Authenticated routes
+booksRoute.use(isAuth, isAuthor);
+booksRoute.post("/create", fileParser, validator(newBookSchema), createNewBook);
+booksRoute.patch("/", fileParser, validator(updateBookSchema), updateBookDetails);
+booksRoute.get("/purchase-library", getAllPurchaseData);
+booksRoute.get("/bookdetail/:id", paramValidator(uuidGSchema("id")), getBookPublicsDetails);
 
-bookRotuer.post("/create", validation, fileParser, validater(newBookSchema), createNewBook);
-bookRotuer.patch("/", validation, fileParser, validater(updateBookSchema), updateBookDetails);
-bookRotuer.get("/all", getAllAvailableBooksController);
-bookRotuer.get("/Purchaselibrary", validation, getAllPurchaseData);
-bookRotuer.get("/bookdetail/:bookslug", validation, getBookPublicsDetails);
-
-export { bookRotuer };
+export default booksRoute;

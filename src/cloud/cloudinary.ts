@@ -1,5 +1,7 @@
-import { appEnv } from "@/config/env";
+// biome-ignore lint/style/noExportedImports: l
 import { v2 as cloudinary } from "cloudinary";
+
+import { appEnv } from "@/config/env";
 
 cloudinary.config({
   cloud_name: appEnv.CLOUDINARY_NAME,

@@ -1,17 +1,22 @@
+import type { RequestHandler } from "express";
 import { ObjectId } from "mongodb";
-import { RequestHandler } from "express";
 
-import { ApiError } from "../utils";
+import { ApiError } from "@/utils/ApiError";
 
-const validateObjectId: RequestHandler = (req, _res, next): void => {
+import { HttpStatusCode } from "@/constant";
+
+const validateObjectId: RequestHandler = (req, _res, next) => {
   const id: string | undefined = req.params.id || (req.query.id as string) || req.body._id;
 
   if (id) {
     try {
       req.params.id = new ObjectId(id).toHexString();
-    } catch (error) {
+    } catch (_error) {
       return next(
-        new ApiError(423, "The provided ID is not a valid MongoDB ObjectId format. ")
+        new ApiError(
+          HttpStatusCode.UnprocessableEntity,
+          "The provided ID is not a valid MongoDB ObjectId format. "
+        )
       );
     }
   }

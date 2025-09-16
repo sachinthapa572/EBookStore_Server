@@ -1,13 +1,17 @@
-import { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import slugify from "slugify";
 
-import { HttpStatusCode } from "@/constant";
-import { ROLES } from "@/enum/";
-import { AuthorModel, UserModel } from "@/model";
-import { RequestAuthorHandler } from "@/types";
-import { ApiError, ApiResponse, asyncHandler } from "@/utils";
+import { ApiError } from "@/utils/ApiError";
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler, type CustomRequestHandler } from "@/utils/asyncHandler";
 
-const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res) => {
+import { HttpStatusCode } from "@/constant";
+import { ROLES } from "@/enum/role.enum";
+import { AuthorModel } from "@/model/author/author.model";
+import { UserModel } from "@/model/user/user.model";
+import type { NewAuthorType } from "@/validators/author/author.validation";
+
+const registerAuthor: CustomRequestHandler<NewAuthorType> = asyncHandler(async (req, res) => {
   const { body, user } = req;
 
   // Check if user is signed up
@@ -41,7 +45,10 @@ const registerAuthor: RequestAuthorHandler = asyncHandler(async (req, res) => {
   await newAuthor.save();
 
   // Update the user's role and authorId
-  await UserModel.findByIdAndUpdate(user._id, { role: ROLES.AUTHOR, authorId: newAuthor._id });
+  await UserModel.findByIdAndUpdate(user._id, {
+    role: ROLES.AUTHOR,
+    authorId: newAuthor._id,
+  });
 
   res
     .status(HttpStatusCode.Created)

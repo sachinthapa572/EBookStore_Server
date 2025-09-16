@@ -1,6 +1,8 @@
 import { createTransport } from "nodemailer";
+
 import { appEnv } from "@/config/env";
-import { SendMailOptionsI } from "@/types";
+import { HttpStatusCode } from "@/constant";
+import type { SendMailOptionsI } from "@/types";
 
 const transport = createTransport({
   host: appEnv.MAILTRAP_SMTP_HOST,
@@ -23,7 +25,7 @@ export const mailService = {
       console.log(`Verification email sent to ${email}`);
     } catch (error) {
       console.error("Error sending verification email:", error);
-      res.status(500).json({
+      res.status(HttpStatusCode.InternalServerError).json({
         status: "error",
         message: "Error sending verification email",
       });

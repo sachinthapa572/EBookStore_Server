@@ -1,60 +1,53 @@
+import type { Request, RequestHandler } from "express";
 import formidable from "formidable";
-import { RequestHandler } from "express";
 
-export const fileParser: RequestHandler = async (req, _res, next) => {
+/**
+ * Processes array values by returning the full array if it has multiple items,
+ * or the first item if it has only one item
+ */
+const processArrayValue = <T>(value: T | T[]): T | T[] => {
+  return Array.isArray(value) && value.length === 1 ? value[0] : value;
+};
+
+/**
+ * Merges formidable fields into the request body
+ */
+const mergeFields = (req: Request, fields: formidable.Fields): void => {
+  req.body = req.body || {};
+
+  for (const key in fields) {
+    if (key in fields) {
+      req.body[key] = processArrayValue(fields[key]);
+    }
+  }
+};
+
+/**
+ * Merges formidable files into the request files object
+ */
+const mergeFiles = (req: Request, files: formidable.Files): void => {
+  req.files = req.files || {};
+
+  for (const key in files) {
+    if (key in files) {
+      const fileValue = files[key];
+      if (fileValue !== undefined) {
+        req.files[key] = processArrayValue(fileValue);
+      }
+    }
+  }
+};
+
+export const fileParser: RequestHandler = (req, _res, next) => {
   const form = formidable();
 
   form.parse(req, (err, fields, files) => {
     if (err) {
       return next(err);
     }
-    // console.log("Parsed fields:", fields);
-    // console.log("Parsed files:", files);
 
-    req.body = req.body || {};
-    req.files = req.files || {};
-
-    // Merge fields into req.body
-    for (const key in fields) {
-      if (Array.isArray(fields[key])) {
-        req.body[key] = fields[key].length > 1 ? fields[key] : fields[key][0];
-      } else {
-        req.body[key] = fields[key];
-      }
-    }
-
-    // Merge files into req.files
-    for (const key in files) {
-      if (Array.isArray(files[key])) {
-        req.files[key] = files[key].length > 1 ? files[key] : files[key][0];
-      } else {
-        if (files[key] !== undefined) {
-          req.files[key] = files[key];
-        }
-      }
-    }
-
-    // console.log("Merged fields:", req.body);
-    // console.log("Merged files:", req.files);
-
+    mergeFields(req, fields);
+    mergeFiles(req, files);
     next();
   });
 };
-
-//! When you use multer for handling file uploads, it simplifies the process significantly by automatically attaching req.body and req.files to the request object after parsing. However, libraries like formidable or busboy do not automatically perform this integration, which is why you have to manually process and append the parsed fields and files to the req.body and req.files.
-
-// for (const key in fields) {
-//   const fieldValue = fields[key];
-//   if (fieldValue) req.body[key] = fieldValue[0];
-// }
-
-// for (const key in files) {
-//   const fieldValue = files[key];
-//   if (fieldValue) {
-//     if (fieldValue.length > 1) {
-//       req.files[key] = fieldValue;
-//     } else {
-//       req.files[key] = fieldValue[0];
-//     }
-//   }
-// }

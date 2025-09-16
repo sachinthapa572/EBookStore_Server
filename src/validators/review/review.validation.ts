@@ -1,4 +1,3 @@
-import { isValidObjectId } from "mongoose";
 import { z } from "zod";
 
 export const newReviewSchema = z.object({
@@ -15,16 +14,20 @@ export const newReviewSchema = z.object({
       invalid_type_error: "Invalid Content Types",
     })
     .optional(),
-  bookId: z
-    .string({
-      required_error: "BookId is required",
-      invalid_type_error: "Invalid BookId Types",
-    })
-    .transform((arg, ctx) => {
-      if (!isValidObjectId(arg)) {
-        ctx.addIssue({ code: "custom", message: "Invalid BookId Types" });
-        return z.NEVER;
-      }
-      return arg;
-    }),
 });
+
+export const paginationSchema = z.object({
+  page: z
+    .string({
+      invalid_type_error: "Invalid Page Types",
+    })
+    .optional(),
+  limit: z
+    .string({
+      invalid_type_error: "Invalid Limit Types",
+    })
+    .optional(),
+});
+
+export type NewReviewType = z.infer<typeof newReviewSchema>;
+export type PaginationType = z.infer<typeof paginationSchema>;

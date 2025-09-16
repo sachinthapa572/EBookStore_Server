@@ -1,19 +1,16 @@
-import util from "util";
+import util from "node:util";
 import "winston-mongodb";
+import { blue, green, magenta, red, yellow } from "colorette";
 import { createLogger, format, transports } from "winston";
-import {
+import type {
   ConsoleTransportInstance,
   FileTransportInstance,
 } from "winston/lib/winston/transports";
-import { EApplicationEnvironment } from "@/enum";
-import path from "path";
-import { red, blue, yellow, green, magenta } from "colorette";
-import * as sourceMapSupport from "source-map-support";
-import { MongoDBTransportInstance } from "winston-mongodb";
-import { appEnv } from "@/config/env";
+import type { MongoDBTransportInstance } from "winston-mongodb";
 
-// Linking Trace Support
-sourceMapSupport.install();
+import path from "node:path";
+import { appEnv } from "@/config/env";
+import { EApplicationEnvironment } from "@/enum/application";
 
 const colorizeLevel = (level: string) => {
   switch (level) {
@@ -50,7 +47,7 @@ const consoleLogFormat = format.printf((info) => {
   return customLog;
 });
 
-const consoleTransport = (): Array<ConsoleTransportInstance> => {
+const consoleTransport = (): ConsoleTransportInstance[] => {
   if (appEnv.NODE_ENV === EApplicationEnvironment.DEVELOPMENT) {
     return [
       new transports.Console({
@@ -92,7 +89,7 @@ const fileLogFormat = format.printf((info) => {
   return JSON.stringify(logData, null, 4);
 });
 
-const FileTransport = (): Array<FileTransportInstance> => {
+export const FileTransport = (): FileTransportInstance[] => {
   return [
     new transports.File({
       filename: path.join(__dirname, "../", "../", "logs", `${appEnv.NODE_ENV}.log`),
@@ -102,7 +99,7 @@ const FileTransport = (): Array<FileTransportInstance> => {
   ];
 };
 
-const MongodbTransport = (): Array<MongoDBTransportInstance> => {
+export const MongodbTransport = (): MongoDBTransportInstance[] => {
   return [
     new transports.MongoDB({
       level: "info",

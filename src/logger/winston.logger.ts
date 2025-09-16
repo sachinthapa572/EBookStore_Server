@@ -1,5 +1,6 @@
-import { appEnv } from "@/config/env";
 import winston from "winston";
+
+import { appEnv } from "@/config/env";
 
 // Define your severity levels.
 const levels = {

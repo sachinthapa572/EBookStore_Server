@@ -1,36 +1,33 @@
-import crypto from "crypto";
-import { RequestHandler } from "express";
-import { ObjectId } from "mongoose";
+import type { RequestHandler } from "express";
+import type { ObjectId } from "mongoose";
 
-import { appEnv } from "@/config";
+import { ApiError } from "@/utils/ApiError";
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler, type CustomRequestHandler } from "@/utils/asyncHandler";
+import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
+import { updateAvatarToCloudinary } from "@/utils/fileUpload";
+import { formatUserProfile } from "@/utils/helper";
+
+import crypto from "node:crypto";
+import { appEnv } from "@/config/env";
 import { cookiesOptions, HttpStatusCode } from "@/constant";
-import { userDoc, UserModel, VerificationTokenModel } from "@/model";
+import { VerificationTokenModel } from "@/model/authentication/verificationToken.model";
+import { UserModel, type userDoc } from "@/model/user/user.model";
 import { EmailTemplate, mailService } from "@/services/email.service";
-import {
-    ApiError,
-    ApiResponse,
-    asyncHandler,
-    asyncHandlerWithTransaction as asyncHandlerT,
-    formatUserProfile,
-    generateAccessTokenAndRefreshToken,
-    updateAvatarToCloudinary,
-} from "@/utils";
+import type { EmailType, UserIdType } from "@/validators/auth/auth.validation";
 
-const generateAuthLink: RequestHandler = asyncHandlerT(async (req, res) => {
+const generateAuthLink: CustomRequestHandler<EmailType> = asyncHandler(async (req, res) => {
   const { email } = req.body;
-  const session = res.locals.session;
 
   // Use findOneAndUpdate to create or update the user
   const user = await UserModel.findOneAndUpdate(
     { email },
     { email },
     { upsert: true, new: true }
-  )
-    .session(session)
-    .lean();
+  ).lean();
 
   // Remove the existing verification token
-  await VerificationTokenModel.deleteOne({ user: user._id }).session(session);
+  await VerificationTokenModel.deleteOne({ user: user._id });
 
   // Generate a new verification token
   const verificationToken = await VerificationTokenModel.create({
@@ -39,7 +36,7 @@ const generateAuthLink: RequestHandler = asyncHandlerT(async (req, res) => {
   });
 
   if (!verificationToken) {
-    throw new ApiError(500, "Token generation failed");
+    throw new ApiError(HttpStatusCode.InternalServerError, "Token generation failed");
   }
 
   // Send the verification email
@@ -60,65 +57,59 @@ const generateAuthLink: RequestHandler = asyncHandlerT(async (req, res) => {
   );
 });
 
-const verifyAuthToken: RequestHandler = asyncHandler(async (req, res) => {
-  const { userId } = req.query as { userId: string };
-  if (!userId || typeof userId !== "string") {
-    throw new ApiError(
-      HttpStatusCode.BadRequest,
-      "Invalid request: userId missing or invalid."
-    );
-  }
+const verifyAuthToken: CustomRequestHandler<object, object, UserIdType> = asyncHandler(
+  async (req, res) => {
+    const { userId } = req.query;
 
-  // Retrieve the verification token and associated user
-  const verificationToken = await VerificationTokenModel.findOne({ token: userId }).populate<{
-    user: userDoc;
-  }>("user");
+    // Retrieve the verification token and associated user
+    const verificationToken = await VerificationTokenModel.findOne({
+      token: userId,
+    }).populate<{
+      user: userDoc;
+    }>("user");
 
-  if (!verificationToken || !verificationToken.user) {
-    throw new ApiError(HttpStatusCode.BadRequest, "Invalid or expired verification token.");
+    if (!verificationToken?.user) {
+      throw new ApiError(HttpStatusCode.BadRequest, "Invalid or expired verification token.");
     }
 
-    verificationToken._id;
+    // verificationToken._id;
 
-  const user = verificationToken.user;
+    const user = verificationToken.user;
 
-  // Check if the user exists in the database
-  if (!(await UserModel.exists({ _id: user._id }))) {
-    throw new ApiError(HttpStatusCode.NotFound, "User not found.");
-  }
+    // Check if the user exists in the database
+    if (!(await UserModel.exists({ _id: user._id }))) {
+      throw new ApiError(HttpStatusCode.NotFound, "User not found.");
+    }
 
-  if (!verificationToken.compareToken(userId)) {
-    throw new ApiError(HttpStatusCode.BadRequest, "Invalid request: Token mismatch.");
-  }
+    if (!verificationToken.compareToken(userId)) {
+      throw new ApiError(HttpStatusCode.BadRequest, "Invalid request: Token mismatch.");
+    }
 
-  // Mark the user as verified and save the user
-  user.isVerified = true;
-  await Promise.all([user.save(), VerificationTokenModel.deleteOne({ user: user._id })]);
+    // Mark the user as verified and save the user
+    user.isVerified = true;
+    await Promise.all([user.save(), VerificationTokenModel.deleteOne({ user: user._id })]);
 
-  // Generate new access and refresh tokens for the user
-  const { refreshToken, accessToken } = await generateAccessTokenAndRefreshToken(
-    user._id as unknown as ObjectId
-  );
-
-  // Set the access token in Redis
-  // redis.setex(user._id.toString(), 60 * 60 * 24 * 30, accessToken);
-
-  res
-    .status(HttpStatusCode.OK)
-    .cookie("accessToken", accessToken, cookiesOptions)
-    .cookie("refreshToken", refreshToken, cookiesOptions)
-    .json(
-      new ApiResponse(
-        HttpStatusCode.OK,
-        { profile: formatUserProfile(user) },
-        "Email verification successful. Welcome!"
-      )
+    // Generate new access and refresh tokens for the user
+    const { refreshToken, accessToken } = await generateAccessTokenAndRefreshToken(
+      user._id as unknown as ObjectId
     );
-  // Redirect to the success URL
-  // res.redirect(`${env.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`);
-});
+    res
+      .status(HttpStatusCode.OK)
+      .cookie("accessToken", accessToken, cookiesOptions)
+      .cookie("refreshToken", refreshToken, cookiesOptions)
+      .json(
+        new ApiResponse(
+          HttpStatusCode.OK,
+          { profile: formatUserProfile(user) },
+          "Email verification successful. Welcome!"
+        )
+      );
+    // Redirect to the success URL
+    // res.redirect(`${env.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`);
+  }
+);
 
-const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
+const ProfileInfo: RequestHandler = asyncHandler((req, res) => {
   res
     .status(HttpStatusCode.OK)
     .json(
@@ -130,7 +121,7 @@ const ProfileInfo: RequestHandler = asyncHandler(async (req, res) => {
     );
 });
 
-const logout: RequestHandler = asyncHandler(async (_req, res) => {
+const logout: RequestHandler = asyncHandler((_req, res) => {
   res
     .status(HttpStatusCode.OK)
     .clearCookie("accessToken")
@@ -166,4 +157,3 @@ const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
 });
 
 export { generateAuthLink, logout, ProfileInfo, updateProfile, verifyAuthToken };
-

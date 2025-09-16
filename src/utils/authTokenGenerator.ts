@@ -1,6 +1,8 @@
-import { UserModel } from "@/model";
-import { ApiError } from "./";
-import { ObjectId } from "mongoose";
+import type { ObjectId } from "mongoose";
+
+import { ApiError } from "./ApiError";
+import { HttpStatusCode } from "@/constant";
+import { UserModel } from "@/model/user/user.model";
 
 type GTR = (userId: ObjectId) => Promise<{
   refreshToken: string;
@@ -11,7 +13,7 @@ const generateAccessTokenAndRefreshToken: GTR = async (userId) => {
   try {
     const user = await UserModel.findById(userId);
     if (!user) {
-      throw new ApiError(404, "User not found");
+      throw new ApiError(HttpStatusCode.NotFound, "No user found");
     }
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
@@ -25,8 +27,11 @@ const generateAccessTokenAndRefreshToken: GTR = async (userId) => {
       refreshToken,
       accessToken,
     };
-  } catch (error) {
-    throw new ApiError(500, "Error occurred while generating token");
+  } catch (_error) {
+    throw new ApiError(
+      HttpStatusCode.InternalServerError,
+      "Error occurred while generating token"
+    );
   }
 };
 

@@ -45,7 +45,7 @@ const commonBookSchema = {
     .transform((value, ctx) => {
       try {
         return JSON.parse(value);
-      } catch (error) {
+      } catch (_error) {
         ctx.addIssue({
           code: "custom",
           message: "The price data is invalid. Please provide it as a valid JSON string.",
@@ -83,7 +83,7 @@ const fileInfo = z
   .transform((value, ctx) => {
     try {
       return JSON.parse(value);
-    } catch (error) {
+    } catch (_error) {
       ctx.addIssue({
         code: "custom",
         message:
@@ -122,12 +122,6 @@ export const newBookSchema = z.object({
   fileInfo,
 });
 
-// const makeFieldsOptional = (schema: Record<string, z.ZodTypeAny>) => {
-//   return Object.fromEntries(
-//     Object.entries(schema).map(([key, value]) => [key, value.optional()])
-//   );
-// };
-
 export const updateBookSchema = z.object({
   ...commonBookSchema,
   slug: z.string({
@@ -142,3 +136,6 @@ export const updateBookSchema = z.object({
 // after writing the corece.{dataType} it will try to convert the data into the data type at the compile time
 
 // pipe is used to apply multiple validation on the same field
+
+export type NewBookType = z.infer<typeof newBookSchema>;
+export type UpdateBookType = z.infer<typeof updateBookSchema>;

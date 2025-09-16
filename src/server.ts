@@ -1,41 +1,38 @@
-import http from "http";
-
-import { app } from "@/app/app";
-import { appEnv, initRateLimiter } from "@/config";
+import { app } from "./app/app";
+import { appEnv } from "./config/env";
+import logger from "./logger/winston.logger";
 import databaseService from "./services/databaseService";
-import logger from "./utils/logger";
+import http from "node:http";
 
-const PORT = appEnv.PORT || 8001;
+const PORT = appEnv.PORT;
 const server: ReturnType<typeof http.createServer> = http.createServer(app);
 
 (async () => {
   try {
     // Database Connection
     const connection = await databaseService.connect();
-    logger.info(`DATABASE_CONNECTION`, {
+    logger.info("DATABASE_CONNECTION", {
       meta: {
         CONNECTION_NAME: connection.name,
       },
     });
 
-    initRateLimiter(connection);
-    logger.info(`RATE_LIMITER_INITIATED`);
     server.listen(PORT, () => {
       console.log(`\x1b[32mServer is running at the port ${PORT}\x1b[0m`);
     });
 
-    logger.info(`APPLICATION_STARTED`, {
+    logger.info("APPLICATION_STARTED", {
       meta: {
         PORT: appEnv.PORT,
         SERVER_URL: appEnv.SERVER_URL,
       },
     });
   } catch (err) {
-    logger.error(`APPLICATION_ERROR`, { meta: err });
+    logger.error("APPLICATION_ERROR", { meta: err });
 
     server.close((error) => {
       if (error) {
-        logger.error(`APPLICATION_ERROR`, { meta: error });
+        logger.error("APPLICATION_ERROR", { meta: error });
       }
       process.exit(1);
     });

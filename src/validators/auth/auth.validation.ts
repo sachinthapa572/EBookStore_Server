@@ -25,3 +25,7 @@ export const newUserSchema = z.object({
     .min(3, "Name must be at least 3 characters long")
     .trim(),
 });
+
+export type EmailType = z.infer<typeof emailschema>;
+export type UserIdType = z.infer<typeof useridsechema>;
+export type NewUserType = z.infer<typeof newUserSchema>;

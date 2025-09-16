@@ -1,5 +1,5 @@
-import { Document, Model, model, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
+import { type Document, type Model, model, Schema } from "mongoose";
 
 interface IVerificationToken extends Document {
   user: Schema.Types.ObjectId;
@@ -9,11 +9,15 @@ interface IVerificationToken extends Document {
   updatedAt: Date;
 }
 
-interface IHashToken {
+type IHashToken = {
   compareToken: (token: string) => boolean;
-}
+};
 
-const verificationTokenSchema = new Schema<IVerificationToken, {}, IHashToken>(
+const verificationTokenSchema = new Schema<
+  IVerificationToken,
+  Record<string, unknown>,
+  IHashToken
+>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -49,4 +53,4 @@ verificationTokenSchema.methods.compareToken = function (token) {
 export const VerificationTokenModel = model<IVerificationToken>(
   "VerificationToken",
   verificationTokenSchema
-) as Model<IVerificationToken, {}, IHashToken>;
+) as Model<IVerificationToken, Record<string, unknown>, IHashToken>;

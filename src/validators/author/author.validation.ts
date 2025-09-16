@@ -19,3 +19,5 @@ export const newAuthorSchema = z.object({
     .array(z.string().url("Social links can only be list of  valid URLs!"))
     .optional(),
 });
+
+export type NewAuthorType = z.infer<typeof newAuthorSchema>;

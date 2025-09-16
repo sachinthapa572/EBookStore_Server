@@ -1,10 +1,12 @@
-import { RequestHandler } from "express";
-import { isValidObjectId } from "mongoose";
+import { ApiError } from "@/utils/ApiError";
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler, type CustomRequestHandler } from "@/utils/asyncHandler";
 
-import { ReviewModel } from "@/model";
-import { customReqHandler, newReviewType } from "@/types";
-import { ApiError, ApiResponse, asyncHandler } from "@/utils";
-import logger from "@/utils/logger";
+import { HttpStatusCode } from "@/constant";
+import logger from "@/logger/winston.logger";
+import { ReviewModel } from "@/model/review/review.model";
+import type { UuidGType } from "@/validators";
+import type { NewReviewType, PaginationType } from "@/validators/review/review.validation";
 
 // Utility function to calculate averages
 const calculateAndUpdateAvgRating = async (bookId: string) => {
@@ -12,7 +14,7 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
     avgRating: number;
     count: number;
   }>([
-    { $match: { bookId } },
+    { $match: { book: bookId } },
     {
       $group: {
         _id: null,
@@ -20,10 +22,10 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
         count: { $sum: 1 },
       },
     },
-  ]).then((result: any) => result[0] || { avgRating: 0, count: 0 });
+  ]).then((result) => result[0] || { avgRating: 0, count: 0 });
 
   await ReviewModel.updateOne(
-    { bookId },
+    { book: bookId },
     {
       avgRating,
       totalReviews: count,
@@ -32,64 +34,80 @@ const calculateAndUpdateAvgRating = async (bookId: string) => {
 };
 
 // add the review
-const addReview: customReqHandler<newReviewType> = asyncHandler(async (req, res) => {
-  const { body, user } = req;
-  const { rating, content, bookId } = body;
+const addReview: CustomRequestHandler<NewReviewType, UuidGType<["bookId"]>> = asyncHandler(
+  async (req, res) => {
+    const { body, user } = req;
+    const { rating, content } = body;
+    const { bookId } = req.params;
 
-  const review = await ReviewModel.findOneAndUpdate(
-    { bookId, userId: user._id },
-    { rating, content, bookId, userId: user._id },
-    { upsert: true, new: true }
-  );
-
-  if (!review) {
-    throw new ApiError(423, "Unable to process review submission");
-  }
-
-  // Update average rating if there are more than 10 reviews
-  const reviewCount = await ReviewModel.countDocuments({ bookId });
-  if (reviewCount > 10) {
-    await calculateAndUpdateAvgRating(bookId);
-  }
-
-  logger.info(`Review successfully added for book ${bookId}`);
-  res.status(201).json(new ApiResponse(201, review, "Review has been successfully submitted"));
-});
-
-const deleteReview: RequestHandler = asyncHandler(async (req, res) => {
-  const { body, user } = req;
-
-  const review = await ReviewModel.findOneAndDelete({
-    _id: body.id,
-    userId: user._id,
-  });
-
-  if (!review) {
-    throw new ApiError(
-      403,
-      "You are not authorized to delete this review or the review does not exist"
+    const review = await ReviewModel.findOneAndUpdate(
+      { book: bookId, user: user._id },
+      { rating, content, book: bookId, user: user._id },
+      { upsert: true, new: true }
     );
+
+    if (!review) {
+      throw new ApiError(423, "Unable to process review submission");
+    }
+
+    // Update average rating if there are more than 10 reviews
+    const reviewCount = await ReviewModel.countDocuments({ book: bookId });
+    if (reviewCount > 10) {
+      await calculateAndUpdateAvgRating(bookId);
+    }
+
+    logger.info(`Review successfully added for book ${bookId}`);
+    res
+      .status(HttpStatusCode.OK)
+      .json(
+        new ApiResponse(HttpStatusCode.OK, review, "Review has been successfully submitted")
+      );
   }
+);
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, { reviewId: body.id }, "Review has been successfully removed"));
-});
+const deleteReview: CustomRequestHandler<object, UuidGType<["id"]>> = asyncHandler(
+  async (req, res) => {
+    const { user } = req;
+    const { id } = req.params;
 
-const getReview: RequestHandler = asyncHandler(async (req, res) => {
+    const review = await ReviewModel.findOneAndDelete({
+      _id: id,
+      user: user._id,
+    });
+
+    if (!review) {
+      throw new ApiError(
+        HttpStatusCode.Forbidden,
+        "You are not authorized to delete this review or the review does not exist"
+      );
+    }
+
+    res
+      .status(HttpStatusCode.OK)
+      .json(
+        new ApiResponse(
+          HttpStatusCode.OK,
+          { reviewId: review._id },
+          "Review has been successfully removed"
+        )
+      );
+  }
+);
+
+const getReview: CustomRequestHandler<
+  object,
+  UuidGType<["bookId"]>,
+  PaginationType
+> = asyncHandler(async (req, res) => {
   const { bookId } = req.params;
   const { page = "1", limit = "10" } = req.query;
-
-  if (!isValidObjectId(bookId)) {
-    throw new ApiError(400, "Invalid book ID");
-  }
 
   const pageNumber = Math.max(Number(page) || 1, 1);
   const limitNumber = Math.max(Number(limit) || 10, 1);
 
   const [totalReviews, reviews] = await Promise.all([
-    ReviewModel.countDocuments({ bookId }),
-    ReviewModel.find({ bookId })
+    ReviewModel.countDocuments({ book: bookId }),
+    ReviewModel.find({ book: bookId })
       .skip((pageNumber - 1) * limitNumber)
       .limit(limitNumber),
   ]);
@@ -97,9 +115,9 @@ const getReview: RequestHandler = asyncHandler(async (req, res) => {
   const totalPages = Math.ceil(totalReviews / limitNumber);
   const nextPage = pageNumber < totalPages ? pageNumber + 1 : null;
 
-  res.status(200).json(
+  res.status(HttpStatusCode.OK).json(
     new ApiResponse(
-      200,
+      HttpStatusCode.OK,
       {
         reviews,
         totalReviews,

@@ -1,11 +1,11 @@
 import morgan from "morgan";
+import type winston from "winston";
 
-import winston from "winston";
 import logger from "./winston.logger";
 
-interface Stream {
+type Stream = {
   write: (message: string) => winston.Logger;
-}
+};
 
 const stream: Stream = {
   // Use the http severity

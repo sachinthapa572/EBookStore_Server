@@ -1,9 +1,11 @@
+import type { RequestHandler } from "express";
+
+import { HttpStatusCode } from "@/constant";
 import { ROLES } from "@/enum/role.enum";
-import { RequestHandler } from "express";
 
 export const isAuthor: RequestHandler = (req, res, next) => {
   if (req.user.role !== ROLES.AUTHOR) {
-    res.status(403).json({
+    res.status(HttpStatusCode.Forbidden).json({
       status: "error",
       message: "Access denied. This operation requires author privileges.",
       code: "UNAUTHORIZED_ACCESS",

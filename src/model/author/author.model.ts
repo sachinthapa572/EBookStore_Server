@@ -1,13 +1,13 @@
-import { Model, model, ObjectId, Schema } from "mongoose";
+import { type Model, model, type ObjectId, Schema } from "mongoose";
 
-export interface AuthorDoc {
+export type AuthorDoc = {
   userId: ObjectId;
   name: string;
   about: string;
   slug: string;
-  socialLinks: [string];
+  socialLinks: string[];
   books: ObjectId[];
-}
+};
 
 const authorSchema = new Schema<AuthorDoc>(
   {
@@ -23,7 +23,6 @@ const authorSchema = new Schema<AuthorDoc>(
       unique: true,
       tolowercase: true,
     },
-    //   something like the github.com/{thapasachin572}==> slug
     slug: {
       type: String,
       required: true,

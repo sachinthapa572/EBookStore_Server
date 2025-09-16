@@ -1,6 +1,6 @@
-import { Model, model, ObjectId, Schema } from "mongoose";
+import { type Model, model, type ObjectId, Schema } from "mongoose";
 
-export interface BookDoc {
+export type BookDoc = {
   author: ObjectId;
   title: string;
   slug: string;
@@ -21,7 +21,7 @@ export interface BookDoc {
     id: string;
     size: string;
   };
-}
+};
 
 const bookSchema = new Schema<BookDoc>(
   {

@@ -1,20 +1,26 @@
-import { Request, RequestHandler } from "express";
+import type { Request, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 
-import { appEnv } from "@/config";
+import { ApiError } from "@/utils/ApiError";
+import { asyncHandler, type CustomRequestHandler } from "@/utils/asyncHandler";
+import { formatUserProfile } from "@/utils/helper";
+
+import { BEARER_TOKEN_REGEX } from "./refreshToken.middleware";
+import { appEnv } from "@/config/env";
 import { HttpStatusCode } from "@/constant";
-import { UserModel } from "@/model";
-import { customReqHandler, newReviewType } from "@/types";
-import { ApiError, asyncHandler, formatUserProfile } from "@/utils";
+import { UserModel } from "@/model/user/user.model";
 
 const verifyJWT: RequestHandler = async (req, _res, next) => {
   try {
     const token =
-      req.cookies?.accessToken || req.headers.authorization?.replace(/^Bearer\s*/, "").trim();
+      req.cookies?.accessToken || req.header("Authorization")?.replace(BEARER_TOKEN_REGEX, "");
 
     if (!token) {
       return next(
-        new ApiError(401, "Authentication required. Please provide a valid access token")
+        new ApiError(
+          HttpStatusCode.Unauthorized,
+          "Authentication required. Please provide a valid access token"
+        )
       );
     }
 
@@ -22,13 +28,23 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
     const decodedToken = jwt.verify(token, appEnv.ACCESS_TOKEN_SECRET) as Request["user"];
 
     if (!decodedToken?._id) {
-      return next(new ApiError(401, "Authentication failed. Invalid token format"));
+      return next(
+        new ApiError(
+          HttpStatusCode.Unauthorized,
+          "Authentication failed. Invalid token format"
+        )
+      );
     }
 
     const user = await UserModel.findById(decodedToken._id);
 
     if (!user) {
-      return next(new ApiError(401, "Authentication failed. User no longer exists"));
+      return next(
+        new ApiError(
+          HttpStatusCode.Unauthorized,
+          "Authentication failed. User no longer exists"
+        )
+      );
     }
 
     req.user = formatUserProfile(user);
@@ -36,23 +52,43 @@ const verifyJWT: RequestHandler = async (req, _res, next) => {
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === "JsonWebTokenError") {
-        return next(new ApiError(401, "Authentication failed. The token is invalid"));
+        return next(
+          new ApiError(
+            HttpStatusCode.Unauthorized,
+            "Authentication failed. The token is invalid"
+          )
+        );
       }
       if (error.name === "TokenExpiredError") {
-        return next(new ApiError(401, "Authentication failed. The token has expired"));
+        return next(
+          new ApiError(
+            HttpStatusCode.Unauthorized,
+            "Authentication failed. The token has expired"
+          )
+        );
       }
-      return next(new ApiError(500, "An unexpected error occurred during authentication"));
+      return next(
+        new ApiError(
+          HttpStatusCode.InternalServerError,
+          "An unexpected error occurred during authentication"
+        )
+      );
     }
-    return next(new ApiError(500, "An unexpected error occurred during authentication"));
+    return next(
+      new ApiError(
+        HttpStatusCode.InternalServerError,
+        "An unexpected error occurred during authentication"
+      )
+    );
   }
 };
 
-export const isPurchaseByTheUser: customReqHandler<newReviewType> = asyncHandler(
-  async (req, _res, next) => {
+export const isPurchaseByTheUser: CustomRequestHandler<object, { bookId: string }> =
+  asyncHandler(async (req, _res, next) => {
     const userDoc = await UserModel.findOne({
       _id: req.user._id,
-      books: req.body.bookId,
-    });
+      books: req.params.bookId,
+    }).lean();
 
     if (!userDoc) {
       return next(
@@ -63,7 +99,6 @@ export const isPurchaseByTheUser: customReqHandler<newReviewType> = asyncHandler
       );
     }
     next();
-  }
-);
+  });
 
 export { verifyJWT as isAuth };
