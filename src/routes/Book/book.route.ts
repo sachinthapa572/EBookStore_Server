@@ -2,8 +2,10 @@ import { Router } from "express";
 
 import {
   createNewBook,
+  generateBookAccessUrl,
   getAllAvailableBooksController,
-  getAllPurchaseData,
+  getAllPurchasedBooks,
+  getBookPublicsByGenere,
   getBookPublicsDetails,
   updateBookDetails,
 } from "@/controllers/book/book.controller";
@@ -20,9 +22,29 @@ booksRoute.get("/all", getAllAvailableBooksController);
 
 // ! Authenticated routes
 booksRoute.use(isAuth, isAuthor);
+
 booksRoute.post("/create", fileParser, validator(newBookSchema), createNewBook);
+
 booksRoute.patch("/", fileParser, validator(updateBookSchema), updateBookDetails);
-booksRoute.get("/purchase-library", getAllPurchaseData);
+
 booksRoute.get("/bookdetail/:id", paramValidator(uuidGSchema("id")), getBookPublicsDetails);
 
+// get all the purchased book by the user
+
+booksRoute.get("/list", getAllPurchasedBooks);
 export default booksRoute;
+
+// get the details of the book
+
+booksRoute.get("/details/:slug", paramValidator(uuidGSchema("slug")), getBookPublicsDetails);
+
+// get the book by the genera
+
+booksRoute.get(
+  "/by-genere/:genere",
+  paramValidator(uuidGSchema("genere")),
+  getBookPublicsByGenere
+);
+
+// get the access to the book
+booksRoute.get("/access/:slug", paramValidator(uuidGSchema("slug")), generateBookAccessUrl);

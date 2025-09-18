@@ -7,6 +7,10 @@ const commonBookSchema = {
       invalid_type_error: "The title must be a text value.",
     })
     .trim(),
+  status: z.enum(["published", "unpublished"], {
+    required_error: "Please select at least one status.",
+    message: "Please select at least one status.",
+  }),
   description: z
     .string({
       required_error: "Please provide a description for the book.",

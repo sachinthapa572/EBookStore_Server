@@ -1,11 +1,14 @@
 import { type Model, model, type ObjectId, Schema } from "mongoose";
 
 export type BookDoc = {
+  _id?: ObjectId;
   author: ObjectId;
   title: string;
   slug: string;
   description: string;
   language: string;
+  status: "published" | "unpublished";
+  copySold: number;
   publishedAt: Date;
   publicationName: string;
   genre: string;
@@ -57,6 +60,15 @@ const bookSchema = new Schema<BookDoc>(
     genre: {
       type: String,
       trim: true,
+    },
+    status: {
+      type: String,
+      enum: ["published", "unpublished"],
+      default: "published",
+    },
+    copySold: {
+      type: Number,
+      default: 0,
     },
     publishedAt: {
       type: Date,
