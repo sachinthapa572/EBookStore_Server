@@ -3,20 +3,22 @@ import { Router } from "express";
 import { quicker } from "@/utils/quicker";
 import { roleGuard } from "@/utils/roleGuard";
 
-import { authRouter } from "./AuthRoute/auth.route";
-import { authorRouter } from "./authorRouter/author.route";
+import authRoute from "./AuthRoute/auth.route";
+import authorRoute from "./authorRouter/author.route";
 import booksRoute from "./Book/book.route";
-import { reviewRouter } from "./Reviews/review.router";
+import historyRoute from "./history/history.route";
+import reviewRoute from "./Reviews/review.router";
 import { doubleCsrfProtection, HttpStatusCode } from "@/constant";
 import { ROLES } from "@/enum/role.enum";
 import { isAuth } from "@/middlewares/isAuth.middleware";
 
 const routes = Router();
 
-routes.use("/auth", authRouter);
-routes.use("/author", authorRouter);
+routes.use("/auth", authRoute);
+routes.use("/author", authorRoute);
 routes.use("/book", booksRoute);
-routes.use("/review", reviewRouter);
+routes.use("/review", reviewRoute);
+routes.use("/history", historyRoute);
 
 // health check
 routes.get("/health", isAuth, doubleCsrfProtection, (req, res) => {

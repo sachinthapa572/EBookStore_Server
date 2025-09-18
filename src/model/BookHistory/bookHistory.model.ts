@@ -1,17 +1,16 @@
 import { type Model, model, type ObjectId, Schema } from "mongoose";
 
 type BookHistoryDoc = {
-  bookId: ObjectId;
+  book: ObjectId;
   reader: ObjectId;
-  // the lastlocation is the last page the user read in the book
-  lastLocation: string;
+  lastLocation: string; // the lastlocation is the last page the user read in the book
   lastReadAt: Date;
-  highlights: { selections: string; fill: string; createdAt: Date }[];
+  highlights: { selection: string; fill: string }[];
   notes: { note: string; createdAt: Date }[];
 };
 const bookHistorySchema = new Schema<BookHistoryDoc>(
   {
-    bookId: {
+    book: {
       type: Schema.Types.ObjectId,
       ref: "Book",
       required: true,
@@ -31,16 +30,12 @@ const bookHistorySchema = new Schema<BookHistoryDoc>(
     },
     highlights: [
       {
-        selections: {
+        selection: {
           type: String,
           required: true,
         },
         fill: {
           type: String,
-          required: true,
-        },
-        createdAt: {
-          type: Date,
           required: true,
         },
       },
