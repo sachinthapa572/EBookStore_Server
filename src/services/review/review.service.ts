@@ -1,3 +1,5 @@
+import type { ObjectId } from "mongoose";
+
 import { ApiError } from "@/utils/ApiError";
 
 import type { PaginatedReviewsResult, PopulatedUser, ReviewData } from "./review.type";
@@ -33,7 +35,7 @@ class ReviewService {
   }
 
   // Add or update a review
-  async addOrUpdateReview(bookId: string, userId: string, reviewData: NewReviewType) {
+  async addOrUpdateReview(bookId: string, userId: ObjectId, reviewData: NewReviewType) {
     const { rating, content } = reviewData;
 
     const review = await ReviewModel.findOneAndUpdate(
@@ -57,7 +59,7 @@ class ReviewService {
   }
 
   // Delete a review
-  async deleteUserReview(reviewId: string, userId: string): Promise<string> {
+  async deleteUserReview(reviewId: string, userId: ObjectId): Promise<string> {
     const review = await ReviewModel.findOneAndDelete({
       _id: reviewId,
       user: userId,
@@ -121,7 +123,7 @@ class ReviewService {
   }
 
   // Get user's own review for a book
-  async getUserOwnReview(bookId: string, userId: string): Promise<ReviewData> {
+  async getUserOwnReview(bookId: string, userId: ObjectId): Promise<ReviewData> {
     const review = await ReviewModel.findOne({ book: bookId, user: userId });
 
     if (!review) {

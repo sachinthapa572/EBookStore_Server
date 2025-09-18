@@ -12,7 +12,7 @@ const addReview: CustomRequestHandler<NewReviewType, UuidGType<["bookId"]>> = as
     const { body, user } = req;
     const { bookId } = req.params;
 
-    const review = await reviewService.addOrUpdateReview(bookId, user.id, body);
+    const review = await reviewService.addOrUpdateReview(bookId, user._id, body);
 
     res
       .status(HttpStatusCode.OK)
@@ -24,7 +24,7 @@ const addReview: CustomRequestHandler<NewReviewType, UuidGType<["bookId"]>> = as
 
 const deleteReview: CustomRequestHandler<object, UuidGType<["id"]>> = asyncHandler(
   async (req, res) => {
-    const reviewId = await reviewService.deleteUserReview(req.params.id, req.user.id);
+    const reviewId = await reviewService.deleteUserReview(req.params.id, req.user._id);
 
     res
       .status(HttpStatusCode.OK)
@@ -65,7 +65,7 @@ const getOwnReview: CustomRequestHandler<object, UuidGType<["bookId"]>> = asyncH
   async (req, res) => {
     const { bookId } = req.params;
 
-    const reviewData = await reviewService.getUserOwnReview(bookId, req.user.id);
+    const reviewData = await reviewService.getUserOwnReview(bookId, req.user._id);
 
     res
       .status(HttpStatusCode.OK)
