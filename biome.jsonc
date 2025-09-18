@@ -11,6 +11,9 @@
       "suspicious": {
         "noConsole": "off"
       },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "info"
+      },
       "style": {
         "noMagicNumbers": "off",
         "useFilenamingConvention": {
