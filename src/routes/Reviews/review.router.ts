@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { addReview, deleteReview, getReview } from "@/controllers/review/review.controller";
+import { addReview, deleteReview, getReviews } from "@/controllers/review/review.controller";
 import { isAuth, isPurchaseByTheUser } from "@/middlewares/isAuth.middleware";
 import {
   paramValidator,
@@ -16,7 +16,7 @@ reviewRouter.get(
   "/:bookid",
   paramValidator(uuidGSchema("bookid")),
   queryValidator(paginationSchema),
-  getReview
+  getReviews
 );
 
 // ! Authenticated routes

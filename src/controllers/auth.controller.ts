@@ -5,7 +5,7 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler, type CustomRequestHandler } from "@/utils/asyncHandler";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
-import { updateAvatarToCloudinary } from "@/utils/fileUpload";
+import { uploadImageTolocalDir } from "@/utils/fileUpload";
 import { formatUserProfile } from "@/utils/helper";
 
 import crypto from "node:crypto";
@@ -40,9 +40,9 @@ const generateAuthLink: CustomRequestHandler<EmailType> = asyncHandler(async (re
   }
 
   // Send the verification email
-  if (appEnv.NODE_ENV === "production") {
+  if (appEnv.NODE_ENV === "development") {
     const emailTemplate = EmailTemplate.VerificationTemplate(
-      `${appEnv.SERVER_URL}/verify?userId=${verificationToken.token}`
+      `${appEnv.SERVER_URL}/auth/verify?userId=${verificationToken.token}`
     );
     await mailService.sendVerificatinMail({ email, res, emailTemplate });
   }
@@ -98,16 +98,12 @@ const verifyAuthToken: CustomRequestHandler<object, object, UserIdType> = asyncH
     res
       .status(HttpStatusCode.OK)
       .cookie("accessToken", accessToken, cookiesOptions)
-      .cookie("refreshToken", refreshToken, cookiesOptions)
-      .json(
-        new ApiResponse(
-          HttpStatusCode.OK,
-          { profile: formatUserProfile(user) },
-          "Email verification successful. Welcome!"
-        )
-      );
+      .cookie("refreshToken", refreshToken, cookiesOptions);
+
     // Redirect to the success URL
-    // res.redirect(`${env.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`);
+    res.redirect(
+      `${appEnv.AUTH_SUCCESS_URL}?profile=${JSON.stringify(formatUserProfile(user))}`
+    );
   }
 );
 
@@ -143,7 +139,13 @@ const updateProfile: RequestHandler = asyncHandler(async (req, res) => {
   }
 
   if (req.files?.avatar && !Array.isArray(req.files.avatar)) {
-    user.avatar = await updateAvatarToCloudinary(req.files.avatar, user.avatar?.id);
+    // user.avatar = await updateAvatarToCloudinary(req.files.avatar, user.avatar?.id);
+    const uniqueFilename = `${user._id}-${Date.now()}`;
+    user.avatar = await uploadImageTolocalDir(
+      req.files.avatar,
+      uniqueFilename,
+      req.files.avatar.originalFilename?.split(".")[1] || "jpg"
+    );
     await user.save();
   }
 

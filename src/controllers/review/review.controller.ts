@@ -94,7 +94,7 @@ const deleteReview: CustomRequestHandler<object, UuidGType<["id"]>> = asyncHandl
   }
 );
 
-const getReview: CustomRequestHandler<
+const getReviews: CustomRequestHandler<
   object,
   UuidGType<["bookId"]>,
   PaginationType
@@ -132,4 +132,4 @@ const getReview: CustomRequestHandler<
   );
 });
 
-export { addReview, deleteReview, getReview };
+export { addReview, deleteReview, getReviews };

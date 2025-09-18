@@ -20,6 +20,7 @@ const updateAvatarToCloudinary = async (file: File, avatarId?: string) => {
     height: 300,
     gravity: "face",
     crop: "fill",
+    upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
   });
 
   return { id: public_id, url: secure_url };

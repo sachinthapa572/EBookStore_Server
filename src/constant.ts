@@ -47,7 +47,7 @@ export const photoStoragePath = path.resolve(__dirname, "../public/photos");
 
 export const corsOptions: CorsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
-  origin: appEnv.CORS_ORIGIN === "*" ? "*" : process.env.CORS_ORIGIN?.split(","),
+  origin: "http://localhost:5173",
   credentials: true,
 };
 
