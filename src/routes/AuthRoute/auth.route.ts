@@ -12,16 +12,16 @@ import { isAuth } from "@/middlewares/isAuth.middleware";
 import { queryValidator, validator } from "@/middlewares/validator.middlewares";
 import { emailschema, useridsechema } from "@/validators/auth/auth.validation";
 
-const authRouter = Router();
+const authRoute = Router();
 
-authRouter.post("/generate-link", validator(emailschema), generateAuthLink);
+authRoute.post("/generate-link", validator(emailschema), generateAuthLink);
 
-authRouter.get("/verify", queryValidator(useridsechema), verifyAuthToken);
+authRoute.get("/verify", queryValidator(useridsechema), verifyAuthToken);
 
-authRouter.use(isAuth);
-authRouter.get("/profile", ProfileInfo);
+authRoute.use(isAuth);
+authRoute.get("/profile", ProfileInfo);
 
-authRouter.put("/profile", fileParser, updateProfile);
-authRouter.get("/logout", logout);
+authRoute.put("/profile", fileParser, updateProfile);
+authRoute.get("/logout", logout);
 
-export { authRouter };
+export default authRoute;

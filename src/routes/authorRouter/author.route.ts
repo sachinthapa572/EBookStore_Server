@@ -5,10 +5,10 @@ import { isAuth } from "@/middlewares/isAuth.middleware";
 import { validator } from "@/middlewares/validator.middlewares";
 import { newAuthorSchema } from "@/validators/author/author.validation";
 
-const authorRouter = Router();
+const authorRoute = Router();
 
-authorRouter.post("/register", isAuth, validator(newAuthorSchema), registerAuthor);
+authorRoute.post("/register", isAuth, validator(newAuthorSchema), registerAuthor);
 
-authorRouter.get("/:id", getAuthorDetails);
+authorRoute.get("/:id", getAuthorDetails);
 
-export { authorRouter };
+export default authorRoute;

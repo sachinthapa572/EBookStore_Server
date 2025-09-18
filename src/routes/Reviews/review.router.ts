@@ -15,9 +15,9 @@ import {
 import { uuidGSchema } from "@/validators";
 import { newReviewSchema, paginationSchema } from "@/validators/review/review.validation";
 
-const reviewRouter = Router();
+const reviewRoute = Router();
 
-reviewRouter.get(
+reviewRoute.get(
   "list/:bookId",
   paramValidator(uuidGSchema("bookId")),
   queryValidator(paginationSchema),
@@ -25,10 +25,10 @@ reviewRouter.get(
 );
 
 // ! Authenticated routes
-reviewRouter.use(isAuth);
+reviewRoute.use(isAuth);
 
-reviewRouter.get("/:bookId", paramValidator(uuidGSchema("bookId")), getOwnReview);
-reviewRouter.post(
+reviewRoute.get("/:bookId", paramValidator(uuidGSchema("bookId")), getOwnReview);
+reviewRoute.post(
   "/:bookId",
   paramValidator(uuidGSchema("bookId")),
   validator(newReviewSchema),
@@ -36,6 +36,6 @@ reviewRouter.post(
   addReview
 );
 
-reviewRouter.delete("/:id", paramValidator(uuidGSchema("id")), deleteReview);
+reviewRoute.delete("/:id", paramValidator(uuidGSchema("id")), deleteReview);
 
-export { reviewRouter };
+export default reviewRoute;
