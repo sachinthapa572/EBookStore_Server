@@ -1,3 +1,5 @@
+import type { ObjectId } from "mongoose";
+
 import { ApiError } from "@/utils/ApiError";
 
 import type {
@@ -12,7 +14,7 @@ import type { NewHistoryType } from "@/validators/history/history.validation";
 
 class HistoryService {
   // Update or create book history
-  async updateBookHistory(userId: string, historyData: NewHistoryType): Promise<void> {
+  async updateBookHistory(userId: ObjectId, historyData: NewHistoryType): Promise<void> {
     const { bookId, ...updateData } = historyData;
 
     const history =
@@ -38,7 +40,7 @@ class HistoryService {
   }
 
   private createNewHistory(
-    userId: string,
+    userId: ObjectId,
     bookId: string,
     data: HistoryUpdateData
   ): HistoryDocument {
@@ -81,7 +83,7 @@ class HistoryService {
   }
 
   // Get book history for a user
-  async getBookHistory(bookId: string, userId: string): Promise<BookHistoryData> {
+  async getBookHistory(bookId: string, userId: ObjectId): Promise<BookHistoryData> {
     const bookHistory = await BookHistoryModel.findOne({
       book: bookId,
       reader: userId,

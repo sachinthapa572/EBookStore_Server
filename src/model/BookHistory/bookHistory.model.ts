@@ -1,6 +1,6 @@
 import { type Model, model, type ObjectId, Schema } from "mongoose";
 
-type BookHistoryDoc = {
+export type BookHistoryDoc = {
   book: ObjectId;
   reader: ObjectId;
   lastLocation: string; // the lastlocation is the last page the user read in the book

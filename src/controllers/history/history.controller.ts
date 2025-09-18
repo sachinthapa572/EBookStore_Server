@@ -8,7 +8,7 @@ import type { NewHistoryType } from "@/validators/history/history.validation";
 
 export const updateBookHistory: CustomRequestHandler<NewHistoryType> = asyncHandler(
   async (req, res) => {
-    await historyService.updateBookHistory(req.user.id, req.body);
+    await historyService.updateBookHistory(req.user._id, req.body);
 
     res
       .status(HttpStatusCode.OK)
@@ -20,7 +20,7 @@ export const getBookHistory: CustomRequestHandler<
   object,
   UuidGType<["bookId"]>
 > = asyncHandler(async (req, res) => {
-  const bookHistoryData = await historyService.getBookHistory(req.params.bookId, req.user.id);
+  const bookHistoryData = await historyService.getBookHistory(req.params.bookId, req.user._id);
 
   res
     .status(HttpStatusCode.OK)
