@@ -6,7 +6,7 @@ import {
   ProfileInfo,
   updateProfile,
   verifyAuthToken,
-} from "@/controllers/auth.controller";
+} from "@/controllers/auth/auth.controller";
 import { fileParser } from "@/middlewares/file.middelware";
 import { isAuth } from "@/middlewares/isAuth.middleware";
 import { queryValidator, validator } from "@/middlewares/validator.middlewares";

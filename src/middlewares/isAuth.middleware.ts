@@ -8,6 +8,7 @@ import { formatUserProfile } from "@/utils/helper";
 import { BEARER_TOKEN_REGEX } from "./refreshToken.middleware";
 import { appEnv } from "@/config/env";
 import { HttpStatusCode } from "@/constant";
+import { BookModel } from "@/model/Book/book.model";
 import { UserModel } from "@/model/user/user.model";
 
 const verifyJWT: RequestHandler = async (req, _res, next) => {
@@ -100,5 +101,43 @@ export const isPurchaseByTheUser: CustomRequestHandler<object, { bookId: string 
     }
     next();
   });
+const EPUB_REGEX = /\/([^/?]+\.epub)/;
 
+export const isValidReadingRequest: RequestHandler = async (req, _res, next) => {
+  const url = req.url;
+  const regexMatch = url.match(EPUB_REGEX);
+
+  if (!regexMatch) {
+    return next(
+      new ApiError(
+        HttpStatusCode.BadRequest,
+        "Invalid URL. Please provide a valid book file ID."
+      )
+    );
+  }
+
+  const bookFileId = regexMatch[1];
+  const book = await BookModel.findOne({ "fileInfo.id": bookFileId });
+  if (!book) {
+    return next(
+      new ApiError(
+        HttpStatusCode.Forbidden,
+        "Access denied. This action requires prior purchase of the book"
+      )
+    );
+  }
+
+  const user = await UserModel.findOne({ _id: req.user._id, books: book._id });
+
+  if (!user) {
+    return next(
+      new ApiError(
+        HttpStatusCode.Forbidden,
+        "Access denied. This action requires prior purchase of the book"
+      )
+    );
+  }
+
+  next();
+};
 export { verifyJWT as isAuth };

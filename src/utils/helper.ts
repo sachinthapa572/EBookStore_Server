@@ -10,7 +10,7 @@ const formatUserProfile = (user: userDoc): Request["user"] => {
     avatar: user.avatar?.url,
     username: user.username,
     signedUp: user.signedUp,
-    authorId: user.authorId,
+    authorId: user?.authorId,
   };
 };
 

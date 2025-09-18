@@ -7,6 +7,7 @@ import path from "node:path";
 import { corsOptions, generateCsrfToken } from "@/constant";
 import morganMiddleware from "@/logger/morgan.logger";
 import { globalErrHandler, notFoundErr } from "@/middlewares/globalErrHandler.middleware";
+import { isAuth, isValidReadingRequest } from "@/middlewares/isAuth.middleware";
 import { refreshTokenMiddleware } from "@/middlewares/refreshToken.middleware";
 import routes from "@/routes/routes";
 
@@ -25,6 +26,12 @@ app.use(
 
 // Serve static files
 app.use("/public", express.static(path.join(path.resolve(__dirname, "../"), "../public")));
+app.use(
+  "/books",
+  isAuth,
+  isValidReadingRequest,
+  express.static(path.join(path.resolve(__dirname, "../"), "../public"))
+);
 
 // Routes
 app.use("/api/v1", routes);
