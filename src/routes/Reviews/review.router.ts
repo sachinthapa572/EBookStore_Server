@@ -1,6 +1,11 @@
 import { Router } from "express";
 
-import { addReview, deleteReview, getReviews } from "@/controllers/review/review.controller";
+import {
+  addReview,
+  deleteReview,
+  getOwnReview,
+  getPublicReviews,
+} from "@/controllers/review/review.controller";
 import { isAuth, isPurchaseByTheUser } from "@/middlewares/isAuth.middleware";
 import {
   paramValidator,
@@ -13,15 +18,16 @@ import { newReviewSchema, paginationSchema } from "@/validators/review/review.va
 const reviewRouter = Router();
 
 reviewRouter.get(
-  "/:bookid",
-  paramValidator(uuidGSchema("bookid")),
+  "list/:bookId",
+  paramValidator(uuidGSchema("bookId")),
   queryValidator(paginationSchema),
-  getReviews
+  getPublicReviews
 );
 
 // ! Authenticated routes
-
 reviewRouter.use(isAuth);
+
+reviewRouter.get("/:bookId", paramValidator(uuidGSchema("bookId")), getOwnReview);
 reviewRouter.post(
   "/:bookId",
   paramValidator(uuidGSchema("bookId")),

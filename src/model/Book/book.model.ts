@@ -21,6 +21,8 @@ export type BookDoc = {
     id: string;
     size: string;
   };
+  avgRating?: number;
+  totalReviews?: number;
 };
 
 const bookSchema = new Schema<BookDoc>(
@@ -76,13 +78,20 @@ const bookSchema = new Schema<BookDoc>(
     },
     fileInfo: {
       type: Object,
-
       url: {
-        type: Number,
+        type: String,
       },
       id: {
-        type: Number,
+        type: String,
       },
+    },
+    avgRating: {
+      type: Number,
+      default: 0,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
     },
   },
   {

@@ -5,8 +5,6 @@ export type ReviewDoc = {
   book: ObjectId;
   rating: number;
   content?: string;
-  avgRating?: number;
-  totalReviews?: number;
   createdAt: Date;
   updatedAt: Date;
 };
