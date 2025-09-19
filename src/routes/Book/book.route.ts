@@ -2,11 +2,14 @@ import { Router } from "express";
 
 import {
   createNewBook,
+  deleteBook,
   generateBookAccessUrl,
   getAllAvailableBooksController,
   getAllPurchasedBooks,
   getBookPublicsByGenere,
   getBookPublicsDetails,
+  getBookRecommendation,
+  getFeaturedBooks,
   updateBookDetails,
 } from "@/controllers/book/book.controller";
 import { fileParser } from "@/middlewares/file.middelware";
@@ -19,6 +22,16 @@ import { newBookSchema, updateBookSchema } from "@/validators/book/book.validati
 const booksRoute = Router();
 
 booksRoute.get("/all", getAllAvailableBooksController);
+booksRoute.get("/featured", getFeaturedBooks);
+
+// get the recommendation of the book
+
+booksRoute.get(
+  "/recommendation/:bookId",
+  isAuth,
+  paramValidator(uuidGSchema("bookId")),
+  getBookRecommendation
+);
 
 // ! Authenticated routes
 booksRoute.use(isAuth, isAuthor);
@@ -32,7 +45,6 @@ booksRoute.get("/bookdetail/:id", paramValidator(uuidGSchema("id")), getBookPubl
 // get all the purchased book by the user
 
 booksRoute.get("/list", getAllPurchasedBooks);
-export default booksRoute;
 
 // get the details of the book
 
@@ -48,3 +60,9 @@ booksRoute.get(
 
 // get the access to the book
 booksRoute.get("/access/:slug", paramValidator(uuidGSchema("slug")), generateBookAccessUrl);
+
+// delete the book
+
+booksRoute.delete("/:bookId", paramValidator(uuidGSchema("bookId")), isAuthor, deleteBook);
+
+export default booksRoute;

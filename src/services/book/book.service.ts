@@ -10,6 +10,7 @@ import {
 import { formatFileSize } from "@/utils/helper";
 
 import type {
+  AggregationResult,
   BookAccessData,
   BookCreationData,
   BookDetailsResponse,
@@ -20,6 +21,7 @@ import type {
   PurchasedBook,
   QueryFilters,
 } from "./book.type";
+import fs from "node:fs";
 import path from "node:path";
 import { appEnv } from "@/config/env";
 import { HttpStatusCode } from "@/constant";
@@ -157,7 +159,7 @@ class BookService {
 
     if (!Array.isArray(cover) && cover?.originalFilename) {
       // Upload cover image
-      newBook.cover = await uploadImageTolocalDir(
+      newBook.cover = uploadImageTolocalDir(
         cover,
         newBook.slug,
         cover.originalFilename?.split(".")[1] || "jpg"
@@ -432,6 +434,136 @@ class BookService {
       url: `${appEnv.SERVER_URL}${book.fileInfo.id}`,
       settings,
     };
+  }
+
+  // Get book recommendations based on genre
+  async getBookRecommendations(bookId: string): Promise<FormattedBook[]> {
+    const book = await BookModel.findById(bookId);
+    if (!book) {
+      throw new ApiError(HttpStatusCode.NotFound, "Book not found");
+    }
+
+    const recommendedBooks = await BookModel.aggregate<AggregationResult>([
+      {
+        $match: {
+          genre: book.genre,
+          _id: { $ne: book._id },
+          status: { $ne: "unpublished" },
+        },
+      },
+      {
+        $lookup: {
+          localField: "_id",
+          from: "reviews",
+          foreignField: "book",
+          as: "reviews",
+        },
+      },
+      {
+        $addFields: {
+          averageRating: { $avg: "$reviews.rating" },
+        },
+      },
+      {
+        $sort: { averageRating: -1 },
+      },
+      {
+        $limit: 5,
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          slug: 1,
+          genre: 1,
+          price: {
+            mrp: 1,
+            sale: 1,
+          },
+          cover: {
+            url: 1,
+          },
+          averageRating: 1,
+        },
+      },
+    ]);
+
+    return recommendedBooks.map((recommendedBook) => this.formatBook(recommendedBook));
+  }
+
+  // Delete a book
+  async deleteBook(bookId: string, authorId: ObjectId): Promise<void> {
+    const deleteMethodAddedDate = 1_722_704_247_287;
+
+    const book = await BookModel.findOne({ _id: bookId, author: authorId });
+    if (!book) {
+      throw new ApiError(HttpStatusCode.NotFound, "Book not found");
+    }
+
+    const bookCreationTime = book.id.getTimestamp().getTime();
+    if (bookCreationTime >= deleteMethodAddedDate) {
+      throw new ApiError(
+        HttpStatusCode.Forbidden,
+        "Deletion method not available for this book"
+      );
+    }
+
+    if (book.copySold >= 1) {
+      throw new ApiError(
+        HttpStatusCode.Forbidden,
+        "Deletion not allowed for books with copied sales"
+      );
+    }
+
+    // Remove old book file (epub) from storage
+    const uploadPath = path.resolve(__dirname, "../../../public/books");
+    const oldFilePath = path.join(uploadPath, book.fileInfo.id);
+    const imageUploadPath = path.resolve(__dirname, "../../../public/photos");
+    const oldImagePath = path.join(imageUploadPath, book.cover?.id || "");
+
+    // Attempt to delete book file
+    if (book.fileInfo) {
+      try {
+        await fs.promises.unlink(oldFilePath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+          logger.error(`Failed to delete book file ${oldFilePath}:`, error);
+          throw error;
+        }
+      }
+    }
+
+    // Attempt to delete cover image
+    if (book.cover) {
+      try {
+        await fs.promises.unlink(oldImagePath);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+          logger.error(`Failed to delete cover image ${oldImagePath}:`, error);
+          throw error;
+        }
+      }
+    }
+
+    const session = await BookModel.startSession();
+
+    try {
+      await session.withTransaction(async () => {
+        // Delete the book document
+        await BookModel.findByIdAndDelete(book._id, { session });
+
+        // Atomically remove the book from author's books array
+        await AuthorModel.findByIdAndUpdate(
+          authorId,
+          { $pull: { books: book._id } },
+          { session }
+        );
+      });
+
+      logger.info(`Book "${book.title}" deleted successfully`);
+    } finally {
+      await session.endSession();
+    }
   }
 }
 

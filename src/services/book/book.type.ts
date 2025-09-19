@@ -92,13 +92,7 @@ export type PurchasedBook = {
 
 export type BookAccessData = {
   url: string;
-  settings: {
-    lastLocation: string;
-    highlights: {
-      selection: string;
-      fill: string;
-    }[];
-  };
+  settings: BookSettings;
 };
 
 export type QueryFilters = {
@@ -122,4 +116,35 @@ export type PaginationData = {
 export type BooksWithPagination = {
   books: FormattedBook[];
   pagination: PaginationData;
+};
+
+export type AggregationResult = {
+  _id?: ObjectId;
+  title: string;
+  genre: string;
+  price: {
+    mrp: number;
+    sale: number;
+  };
+  cover?: {
+    url: string;
+  };
+  slug: string;
+  avgRating?: number;
+};
+
+export type FeaturedBook = {
+  title: string;
+  slogan: string;
+  subtitle: string;
+  cover: string;
+  slug: string;
+};
+
+export type BookSettings = {
+  lastLocation: string;
+  highlights: {
+    selection: string;
+    fill: string;
+  }[];
 };
