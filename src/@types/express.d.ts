@@ -18,8 +18,7 @@ declare global {
         authorId?: ObjectId;
         role: string;
       };
-      // files?: { [key: string]: File | File[] };
-      files: Record<string, File | File[]>;
+      files: Record<string, File | File[] | undefined>;
     }
     // biome-ignore lint/nursery/useConsistentTypeDefinitions: i
     interface Locals {

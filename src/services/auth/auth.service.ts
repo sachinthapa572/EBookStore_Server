@@ -1,20 +1,20 @@
-import crypto from "node:crypto";
-import type { ObjectId } from "mongoose";
-import type { File } from "formidable";
 import type { Response } from "express";
+import type { File } from "formidable";
+import type { ObjectId } from "mongoose";
 
 import { ApiError } from "@/utils/ApiError";
 import { generateAccessTokenAndRefreshToken } from "@/utils/authTokenGenerator";
 import { uploadImageTolocalDir } from "@/utils/fileUpload";
 import { formatUserProfile } from "@/utils/helper";
 
+import type { AuthLinkResponse, TokenPair } from "./auth.type";
+import crypto from "node:crypto";
 import { appEnv } from "@/config/env";
 import { HttpStatusCode } from "@/constant";
 import { VerificationTokenModel } from "@/model/authentication/verificationToken.model";
 import { UserModel, type userDoc } from "@/model/user/user.model";
 import { EmailTemplate, mailService } from "@/services/email.service";
 import type { SendMailOptionsI } from "@/types";
-import type { AuthLinkResponse, TokenPair } from "./auth.type";
 
 class AuthService {
   // Generate authentication link and send verification email

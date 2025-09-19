@@ -1,4 +1,5 @@
 import type { ObjectId } from "mongoose";
+
 import type { userDoc } from "@/model/user/user.model";
 
 export type AuthUser = {
