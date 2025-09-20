@@ -78,17 +78,11 @@ class AuthorService {
   }
 
   // Get author details by slug
-  async getAuthorDetails(authorSlug: string): Promise<AuthorData> {
-    // Check if author slug is provided
-    if (!authorSlug) {
-      throw new ApiError(
-        HttpStatusCode.BadRequest,
-        "Author identifier is required. Please provide a valid author slug."
-      );
-    }
-
+  async getAuthorDetails(authorId: string): Promise<AuthorData> {
     // Fetch the author
-    const author = await AuthorModel.findOne({ slug: authorSlug });
+    const author = await AuthorModel.findById(authorId).populate<{ books: BookDoc[] }>(
+      "books"
+    );
     if (!author) {
       throw new ApiError(
         HttpStatusCode.NotFound,
@@ -129,6 +123,13 @@ class AuthorService {
         title: book.title,
         slug: book.slug,
         status: book.status,
+        genre: book.genre,
+        price: {
+          mrp: (book.price.mrp / 100).toFixed(2),
+          sale: (book.price.sale / 100).toFixed(2),
+        },
+        cover: book.cover?.url,
+        rating: book.avgRating?.toFixed(1),
       })),
     };
   }
