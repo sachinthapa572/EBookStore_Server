@@ -7,7 +7,7 @@ import logger from "@/utils/logger";
 
 import { appEnv } from "@/config/env";
 import { HttpStatusCode } from "@/constant";
-import type { BookDoc } from "@/model/Book/book.model";
+import { type BookDoc, BookModel } from "@/model/Book/book.model";
 import CartModel from "@/model/cart/cart.model";
 import { OrderModel } from "@/model/order/order.model";
 import type { UuidGType } from "@/validators";
@@ -15,6 +15,28 @@ import type { UuidGType } from "@/validators";
 export const stripe = new Stripe(appEnv.STRIPE_SECRET_KEY, {
   apiVersion: "2025-08-27.basil",
 });
+
+type StripeLineItems = Stripe.Checkout.SessionCreateParams.LineItem[];
+
+type Toptions = {
+  customer: Stripe.CustomerCreateParams;
+  line_items: StripeLineItems;
+};
+
+const generateStripeCheckoutSession = async (options: Toptions) => {
+  const customer = await stripe.customers.create(options.customer);
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    success_url: process.env.PAYMENT_SUCCESS_URL,
+    cancel_url: process.env.PAYMENT_CANCEL_URL,
+    line_items: options.line_items,
+    customer: customer.id,
+  });
+
+  return session;
+};
 
 export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asyncHandler(
   async (req, res) => {
@@ -33,6 +55,17 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
       throw new ApiError(HttpStatusCode.NotFound, "Cart not found");
     }
 
+    const hasInvalidItems = cart.items.some(
+      (cartItem) => cartItem.product.status === "unpublished"
+    );
+
+    if (hasInvalidItems) {
+      throw new ApiError(
+        HttpStatusCode.Forbidden,
+        "One or more items in your cart are no longer available for purchase."
+      );
+    }
+
     const newOrder = await OrderModel.create({
       userId: req.user._id,
       orderItems: cart.items.map(({ product, quantity }) => {
@@ -45,9 +78,8 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
       }),
     });
 
-    let customer: Stripe.Customer;
     try {
-      customer = await stripe.customers.create({
+      const customer = {
         name: req.user.username,
         email: req.user.email,
         metadata: {
@@ -55,24 +87,9 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
           orderId: newOrder._id.toString(),
           type: "checkout",
         },
-      });
-    } catch (e) {
-      if (e instanceof Stripe.errors.StripeError) {
-        logger.error(`Stripe error: ${req.user._id}`, e);
-        throw new ApiError(HttpStatusCode.InternalServerError, e.message);
-      }
-      throw new ApiError(
-        HttpStatusCode.InternalServerError,
-        "Failed to create Stripe customer"
-      );
-    }
+      };
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      success_url: appEnv.PAYMENT_SUCCESS_URL,
-      cancel_url: appEnv.PAYMENT_CANCEL_URL,
-      line_items: cart.items.map(({ product, quantity }) => {
+      const line_items = cart.items.map(({ product, quantity }) => {
         // const images = product.cover ? { images: [sanitizeUrl(product.cover.url)] } : {};
         return {
           quantity,
@@ -85,20 +102,34 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
             },
           },
         };
-      }),
-      customer: customer.id,
-    });
+      });
 
-    if (session.url) {
-      res
-        .status(HttpStatusCode.OK)
-        .json(
-          new ApiResponse(HttpStatusCode.OK, { url: session.url }, "Checkout session created")
+      const session = await generateStripeCheckoutSession({ customer, line_items });
+
+      if (session.url) {
+        res
+          .status(HttpStatusCode.OK)
+          .json(
+            new ApiResponse(
+              HttpStatusCode.OK,
+              { url: session.url },
+              "Checkout session created"
+            )
+          );
+      } else {
+        throw new ApiError(
+          HttpStatusCode.InternalServerError,
+          "Failed to create checkout session"
         );
-    } else {
+      }
+    } catch (e) {
+      if (e instanceof Stripe.errors.StripeError) {
+        logger.error(`Stripe error: ${req.user._id}`, e);
+        throw new ApiError(HttpStatusCode.InternalServerError, e.message);
+      }
       throw new ApiError(
         HttpStatusCode.InternalServerError,
-        "Failed to create checkout session"
+        "Failed to create Stripe customer"
       );
     }
   }
@@ -107,3 +138,75 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
 export const sanitizeUrl = (url: string) => {
   return url.replace(/ /g, "%20");
 };
+
+export const instantCheckout: CustomRequestHandler<{
+  productId: string;
+}> = asyncHandler(async (req, res) => {
+  const { productId } = req.body;
+
+  const product = await BookModel.findById(productId);
+
+  if (!product) {
+    throw new ApiError(HttpStatusCode.NotFound, "Product not found!");
+  }
+
+  if (product.status === "unpublished") {
+    throw new ApiError(HttpStatusCode.Forbidden, "Sorry this book is no longer for sale!");
+  }
+
+  const newOrder = await OrderModel.create({
+    userId: req.user._id,
+    orderItems: [
+      {
+        id: product._id,
+        price: product.price.sale,
+        qty: 1,
+        totalPrice: product.price.sale,
+      },
+    ],
+  });
+
+  const customer = {
+    name: req.user.username,
+    email: req.user.email,
+    metadata: {
+      userId: req.user._id.toString(),
+      type: "instant-checkout",
+      orderId: newOrder._id.toString(),
+    },
+  };
+
+  const images = product.cover ? { images: [sanitizeUrl(product.cover.url)] } : {};
+
+  const line_items: StripeLineItems = [
+    {
+      quantity: 1,
+      price_data: {
+        currency: "usd",
+        unit_amount: product.price.sale,
+        product_data: {
+          name: product.title,
+          ...images,
+        },
+      },
+    },
+  ];
+
+  const session = await generateStripeCheckoutSession({ customer, line_items });
+  if (session.url) {
+    res
+      .status(HttpStatusCode.OK)
+      .json(
+        new ApiResponse(
+          HttpStatusCode.OK,
+          { checkoutUrl: session.url },
+          "Checkout session created"
+        )
+      );
+  } else {
+    throw new ApiError(
+      HttpStatusCode.InternalServerError,
+      "Failed to create checkout session"
+    );
+  }
+});

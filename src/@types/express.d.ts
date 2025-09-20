@@ -17,6 +17,7 @@ declare global {
         avatar?: string;
         authorId?: ObjectId;
         role: string;
+        books: ObjectId[];
       };
       files: Record<string, File | File[] | undefined>;
     }
