@@ -14,7 +14,7 @@
     "clean": "rm -rf node_modules dist *.log",
     "check": "bunx ultracite  check --vcs-use-ignore-file=true",
     "fix": "bunx ultracite  check --vcs-use-ignore-file=true --write",
-    "preinstall": "npx only-allow bun"
+    "preinstall": "bun x only-allow bun"
   },
   "keywords": [
     "nodejs",
@@ -54,6 +54,7 @@
     "morgan": "^1.10.1",
     "nodemailer": "^7.0.6",
     "slugify": "^1.6.6",
+    "stripe": "^18.5.0",
     "typescript": "^5.9.2",
     "uuid": "^13.0.0",
     "winston": "^3.17.0",
