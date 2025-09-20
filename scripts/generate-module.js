@@ -334,7 +334,7 @@ export default ${camelName}Route;
 }
 
 async function generateModule(moduleName) {
-  const basePath = join(process.cwd(), "../src");
+  const basePath = join(process.cwd(), "src");
   const pascalName = toPascalCase(moduleName);
 
   try {

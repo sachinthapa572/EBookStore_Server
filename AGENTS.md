@@ -1,305 +1,368 @@
-# Project Context
-Ultracite enforces strict type safety, accessibility standards, and consistent code quality for JavaScript/TypeScript projects using Biome's lightning-fast formatter and linter.
+# Backend Development Guidelines for E-Book Store API
+
+This document outlines essential coding standards and best practices for our Node.js, Express, and TypeScript backend development. Following these guidelines will ensure high-quality, maintainable, and secure code.
+
+## Core Principles
+
+- **Type Safety**: Leverage TypeScript's type system to prevent runtime errors
+- **Clean Architecture**: Maintain separation of concerns (controllers, services, models)
+- **Security-First**: Protect against common vulnerabilities and follow OWASP guidelines
+- **Performance**: Optimize database queries and API response times
+- **Error Handling**: Implement comprehensive error handling with proper logging
+- **Maintainability**: Write clean, self-documenting code with consistent patterns
+
 
 ## Key Principles
-- Zero configuration required
-- Subsecond performance
+
 - Maximum type safety
-- AI-friendly code generation
+- Clean, maintainable code
+- Security-first approach
+- Performance optimization
+- Error handling excellence
 
 ## Before Writing Code
+
 1. Analyze existing patterns in the codebase
 2. Consider edge cases and error scenarios
 3. Follow the rules below strictly
-4. Validate accessibility requirements
+4. Implement proper error handling
+5. Ensure security best practices
+6. Write comprehensive tests
 
-## Rules
+## Development Workflow
 
-### Accessibility (a11y)
-- Don't use `accessKey` attribute on any HTML element.
-- Don't set `aria-hidden="true"` on focusable elements.
-- Don't add ARIA roles, states, and properties to elements that don't support them.
-- Don't use distracting elements like `<marquee>` or `<blink>`.
-- Only use the `scope` prop on `<th>` elements.
-- Don't assign non-interactive ARIA roles to interactive HTML elements.
-- Make sure label elements have text content and are associated with an input.
-- Don't assign interactive ARIA roles to non-interactive HTML elements.
-- Don't assign `tabIndex` to non-interactive HTML elements.
-- Don't use positive integers for `tabIndex` property.
-- Don't include "image", "picture", or "photo" in img alt prop.
-- Don't use explicit role property that's the same as the implicit/default role.
-- Make static elements with click handlers use a valid role attribute.
-- Always include a `title` element for SVG elements.
-- Give all elements requiring alt text meaningful information for screen readers.
-- Make sure anchors have content that's accessible to screen readers.
-- Assign `tabIndex` to non-interactive HTML elements with `aria-activedescendant`.
-- Include all required ARIA attributes for elements with ARIA roles.
-- Make sure ARIA properties are valid for the element's supported roles.
-- Always include a `type` attribute for button elements.
-- Make elements with interactive roles and handlers focusable.
-- Give heading elements content that's accessible to screen readers (not hidden with `aria-hidden`).
-- Always include a `lang` attribute on the html element.
-- Always include a `title` attribute for iframe elements.
-- Accompany `onClick` with at least one of: `onKeyUp`, `onKeyDown`, or `onKeyPress`.
-- Accompany `onMouseOver`/`onMouseOut` with `onFocus`/`onBlur`.
-- Include caption tracks for audio and video elements.
-- Use semantic elements instead of role attributes in JSX.
-- Make sure all anchors are valid and navigable.
-- Ensure all ARIA properties (`aria-*`) are valid.
-- Use valid, non-abstract ARIA roles for elements with ARIA roles.
-- Use valid ARIA state and property values.
-- Use valid values for the `autocomplete` attribute on input elements.
-- Use correct ISO language/country codes for the `lang` attribute.
+1. **Before Coding**:
+   - Analyze requirements and plan your approach
+   - Review existing patterns in the codebase
+   - Consider edge cases and error scenarios
+   - Plan your data model and API design
 
-### Code Complexity and Quality
-- Don't use consecutive spaces in regular expression literals.
-- Don't use the `arguments` object.
-- Don't use primitive type aliases or misleading types.
-- Don't use the comma operator.
-- Don't use empty type parameters in type aliases and interfaces.
-- Don't write functions that exceed a given Cognitive Complexity score.
-- Don't nest describe() blocks too deeply in test files.
-- Don't use unnecessary boolean casts.
-- Don't use unnecessary callbacks with flatMap.
-- Use for...of statements instead of Array.forEach.
-- Don't create classes that only have static members (like a static namespace).
-- Don't use this and super in static contexts.
-- Don't use unnecessary catch clauses.
-- Don't use unnecessary constructors.
-- Don't use unnecessary continue statements.
-- Don't export empty modules that don't change anything.
-- Don't use unnecessary escape sequences in regular expression literals.
-- Don't use unnecessary fragments.
-- Don't use unnecessary labels.
-- Don't use unnecessary nested block statements.
-- Don't rename imports, exports, and destructured assignments to the same name.
-- Don't use unnecessary string or template literal concatenation.
-- Don't use String.raw in template literals when there are no escape sequences.
-- Don't use useless case statements in switch statements.
-- Don't use ternary operators when simpler alternatives exist.
-- Don't use useless `this` aliasing.
-- Don't use any or unknown as type constraints.
-- Don't initialize variables to undefined.
-- Don't use the void operators (they're not familiar).
-- Use arrow functions instead of function expressions.
-- Use Date.now() to get milliseconds since the Unix Epoch.
-- Use .flatMap() instead of map().flat() when possible.
-- Use literal property access instead of computed property access.
-- Don't use parseInt() or Number.parseInt() when binary, octal, or hexadecimal literals work.
-- Use concise optional chaining instead of chained logical expressions.
-- Use regular expression literals instead of the RegExp constructor when possible.
-- Don't use number literal object member names that aren't base 10 or use underscore separators.
-- Remove redundant terms from logical expressions.
-- Use while loops instead of for loops when you don't need initializer and update expressions.
-- Don't pass children as props.
-- Don't reassign const variables.
-- Don't use constant expressions in conditions.
-- Don't use `Math.min` and `Math.max` to clamp values when the result is constant.
-- Don't return a value from a constructor.
-- Don't use empty character classes in regular expression literals.
-- Don't use empty destructuring patterns.
-- Don't call global object properties as functions.
-- Don't declare functions and vars that are accessible outside their block.
-- Make sure builtins are correctly instantiated.
-- Don't use super() incorrectly inside classes. Also check that super() is called in classes that extend other constructors.
-- Don't use variables and function parameters before they're declared.
-- Don't use 8 and 9 escape sequences in string literals.
-- Don't use literal numbers that lose precision.
+2. **During Development**:
+   - Write clean, self-documenting code
+   - Implement proper validation and error handling
+   - Adhere to the project's architectural patterns
+   - Follow security best practices
+
+3. **After Development**:
+   - Test thoroughly (unit, integration, edge cases)
+   - Document your code and API endpoints
+   - Review your code for security vulnerabilities
+   - Optimize for performance if needed
+
+## TypeScript Best Practices
+
+- Use strict TypeScript configuration (`"strict": true` in tsconfig.json)
+- Create interfaces for all data models and API request/response objects
+- Use type guards to handle dynamic or unknown data safely
+- Avoid using `any` type - use `unknown` with type guards when necessary
+- Use `readonly` for properties that shouldn't be modified
+- Use `interface` for object types and `type` for unions, intersections, and tuples
+- Use `Record<K, V>` for dynamic key-value objects
+- Don't use TypeScript enums - use union types or `as const` objects instead
+- Use `export type` and `import type` for type imports
+- Don't use non-null assertions (`!`) - handle null/undefined explicitly
+- Use consistent array notation - either `T[]` or `Array<T>`, prefer `T[]` for simple types
+- Use branded types for IDs and other primitive values that need type safety
+
+## Express & API Best Practices
+
+- Structure routes using Express Router with consistent patterns
+- Implement middleware for common functionality (auth, validation, etc.)
+- Use async/await with proper error handling
+- Implement request validation using Zod, Joi, or class-validator
+- Follow RESTful API design principles:
+  - Use appropriate HTTP methods (GET, POST, PUT, DELETE)
+  - Use consistent URL patterns (plural nouns for resources)
+  - Return appropriate status codes
+  - Use query parameters for filtering/pagination
+- Implement consistent response format:
+  ```ts
+  {
+    success: boolean;
+    message: string;
+    data?: any;
+    error?: { code: string; details?: any };
+  }
+  ```
+- Implement pagination for list endpoints
+- Use proper error middleware to handle exceptions
+- Document API endpoints with OpenAPI/Swagger
+- Implement request rate limiting
+- Use CORS with appropriate origin configuration
+
+## Security Best Practices
+
+- Store sensitive information in environment variables, never in code
+- Implement proper authentication and authorization
+- Use secure password hashing (bcrypt/argon2)
+- Set secure HTTP headers with helmet.js
+- Validate and sanitize all user inputs
+- Implement proper CORS configuration
+- Use parameterized queries to prevent injection attacks
+- Implement rate limiting for authentication endpoints
+- Set secure cookie options (httpOnly, secure, sameSite)
+- Log security events (login attempts, permission changes)
+- Implement proper file upload validation and limits
+- Rotate API keys and tokens regularly
+- Implement proper CSRF protection
+- Keep dependencies updated to avoid vulnerabilities
+
+## Database Best Practices
+
+- Use Mongoose schemas with proper validation
+- Implement indexes for frequently queried fields
+- Use transactions for multi-step operations
+- Handle database connection errors gracefully
+- Implement soft deletes where appropriate
+- Use lean queries when possible for better performance
+- Avoid deep population chains, use multiple queries instead
+- Use aggregation pipeline for complex data transformation
+- Implement proper error handling for database operations
+- Use connection pooling
+- Avoid large batch operations that could lock collections
+- Implement proper database migrations for schema changes
+- Use atomic operations when possible
+- Implement proper backup and recovery strategies
+
+## Error Handling Patterns
+
+```typescript
+// Controller with proper error handling
+const getBook = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  // Validate ID format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, 'Invalid book ID format');
+  }
+
+  // Get book from database
+  const book = await bookService.findById(id);
+  if (!book) {
+    throw new ApiError(404, 'Book not found');
+  }
+
+  // Return success response
+  res.status(200).json({
+    success: true,
+    message: 'Book retrieved successfully',
+    data: book
+  });
+});
+
+// Global error handler middleware
+const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  logger.error('Error occurred:', {
+    path: req.path,
+    method: req.method,
+    error: err.message,
+    stack: err.stack
+  });
+
+  // Handle specific error types
+  if (err instanceof ApiError) {
+    res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      error: err.details ? { details: err.details } : undefined
+    });
+    return;
+  }
+
+  if (err instanceof mongoose.Error.ValidationError) {
+    res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      error: {
+        code: 'VALIDATION_ERROR',
+        details: formatMongooseError(err)
+      }
+    });
+    return;
+  }
+
+  // Handle unexpected errors
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: { code: 'INTERNAL_ERROR' }
+  });
+};
+```
+
+## Service Layer Pattern
+
+```typescript
+// Book service with proper separation of concerns
+class BookService {
+  async findById(id: string): Promise<IBook | null> {
+    try {
+      return await Book.findById(id).lean();
+    } catch (error) {
+      logger.error('Error finding book by ID', { id, error });
+      throw new DatabaseError('Failed to fetch book', error);
+    }
+  }
+
+  async create(bookData: CreateBookDto): Promise<IBook> {
+    try {
+      // Validate author exists
+      const authorExists = await Author.exists({ _id: bookData.authorId });
+      if (!authorExists) {
+        throw new ApiError(400, 'Author does not exist');
+      }
+
+      // Create new book
+      const book = new Book(bookData);
+      await book.save();
+      return book;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error creating book', { data: bookData, error });
+      throw new DatabaseError('Failed to create book', error);
+    }
+  }
+
+  async update(id: string, updateData: UpdateBookDto): Promise<IBook | null> {
+    try {
+      const book = await Book.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      );
+
+      return book;
+    } catch (error) {
+      logger.error('Error updating book', { id, data: updateData, error });
+      throw new DatabaseError('Failed to update book', error);
+    }
+  }
+}
+
+export const bookService = new BookService();
+```
+
+## Validation Pattern
+
+```typescript
+// Request validation with Zod
+import { z } from 'zod';
+import { Request, Response, NextFunction } from 'express';
+
+// Schema definition
+const createBookSchema = z.object({
+  title: z.string().min(1).max(200),
+  authorId: z.string().regex(/^[0-9a-fA-F]{24}$/),
+  description: z.string().optional(),
+  price: z.number().positive(),
+  coverImage: z.string().optional(),
+  categories: z.array(z.string()).optional(),
+  publishDate: z.string().datetime().optional(),
+  isbn: z.string().optional()
+});
+
+// Validation middleware
+export const validateBookCreate = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validatedData = createBookSchema.parse(req.body);
+    req.body = validatedData; // Replace with validated data
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        error: {
+          code: 'VALIDATION_ERROR',
+          details: error.errors.map(e => ({
+            path: e.path.join('.'),
+            message: e.message
+          }))
+        }
+      });
+      return;
+    }
+    next(error);
+  }
+};
+```
 
 
-### Correctness and Safety
-- Don't assign a value to itself.
-- Don't return a value from a setter.
-- Don't compare expressions that modify string case with non-compliant values.
-- Don't use lexical declarations in switch clauses.
-- Don't use variables that haven't been declared in the document.
-- Don't write unreachable code.
-- Make sure super() is called exactly once on every code path in a class constructor before this is accessed if the class has a superclass.
-- Don't use control flow statements in finally blocks.
-- Don't use optional chaining where undefined values aren't allowed.
-- Don't have unused function parameters.
-- Don't have unused imports.
-- Don't have unused labels.
-- Don't have unused private class members.
-- Don't have unused variables.
-- Make sure void (self-closing) elements don't have children.
-- Don't return a value from a function with the return type 'void'
-- Use isNaN() when checking for NaN.
-- Make sure "for" loop update clauses move the counter in the right direction.
-- Make sure typeof expressions are compared to valid values.
-- Make sure generator functions contain yield.
-- Don't use await inside loops.
-- Don't use bitwise operators.
-- Don't use expressions where the operation doesn't change the value.
-- Make sure Promise-like statements are handled appropriately.
-- Don't use __dirname and __filename in the global scope.
-- Prevent import cycles.
-- Don't use configured elements.
-- Don't hardcode sensitive data like API keys and tokens.
-- Don't let variable declarations shadow variables from outer scopes.
-- Don't use the TypeScript directive @ts-ignore.
-- Prevent duplicate polyfills from Polyfill.io.
-- Don't use useless backreferences in regular expressions that always match empty strings.
-- Don't use unnecessary escapes in string literals.
-- Don't use useless undefined.
-- Make sure getters and setters for the same property are next to each other in class and object definitions.
-- Make sure object literals are declared consistently (defaults to explicit definitions).
-- Use static Response methods instead of new Response() constructor when possible.
-- Make sure switch-case statements are exhaustive.
-- Make sure the `preconnect` attribute is used when using Google Fonts.
-- Use `Array#{indexOf,lastIndexOf}()` instead of `Array#{findIndex,findLastIndex}()` when looking for the index of an item.
-- Make sure iterable callbacks return consistent values.
-- Use `with { type: "json" }` for JSON module imports.
-- Use numeric separators in numeric literals.
-- Use object spread instead of `Object.assign()` when constructing new objects.
-- Always use the radix argument when using `parseInt()`.
-- Make sure JSDoc comment lines start with a single asterisk, except for the first one.
-- Include a description parameter for `Symbol()`.
-- Don't use spread (`...`) syntax on accumulators.
-- Don't use the `delete` operator.
-- Don't access namespace imports dynamically.
-- Don't use namespace imports.
-- Declare regex literals at the top level.
-- Don't use `target="_blank"` without `rel="noopener"`.
+## Database Transaction Pattern
 
-### TypeScript Best Practices
-- Don't use TypeScript enums.
-- Don't export imported variables.
-- Don't add type annotations to variables, parameters, and class properties that are initialized with literal expressions.
-- Don't use TypeScript namespaces.
-- Don't use non-null assertions with the `!` postfix operator.
-- Don't use parameter properties in class constructors.
-- Don't use user-defined types.
-- Use `as const` instead of literal types and type annotations.
-- Use either `T[]` or `Array<T>` consistently.
-- Initialize each enum member value explicitly.
-- Use `export type` for types.
-- Use `import type` for types.
-- Make sure all enum members are literal values.
-- Don't use TypeScript const enum.
-- Don't declare empty interfaces.
-- Don't let variables evolve into any type through reassignments.
-- Don't use the any type.
-- Don't misuse the non-null assertion operator (!) in TypeScript files.
-- Don't use implicit any type on variable declarations.
-- Don't merge interfaces and classes unsafely.
-- Don't use overload signatures that aren't next to each other.
-- Use the namespace keyword instead of the module keyword to declare TypeScript namespaces.
+```typescript
+// Mongoose transaction example
+async function purchaseBook(userId: string, bookId: string): Promise<void> {
+  // Start session
+  const session = await mongoose.startSession();
 
-### Style and Consistency
-- Don't use global `eval()`.
-- Don't use callbacks in asynchronous tests and hooks.
-- Don't use negation in `if` statements that have `else` clauses.
-- Don't use nested ternary expressions.
-- Don't reassign function parameters.
-- This rule lets you specify global variable names you don't want to use in your application.
-- Don't use specified modules when loaded by import or require.
-- Don't use constants whose value is the upper-case version of their name.
-- Use `String.slice()` instead of `String.substr()` and `String.substring()`.
-- Don't use template literals if you don't need interpolation or special-character handling.
-- Don't use `else` blocks when the `if` block breaks early.
-- Don't use yoda expressions.
-- Don't use Array constructors.
-- Use `at()` instead of integer index access.
-- Follow curly brace conventions.
-- Use `else if` instead of nested `if` statements in `else` clauses.
-- Use single `if` statements instead of nested `if` clauses.
-- Use `new` for all builtins except `String`, `Number`, and `Boolean`.
-- Use consistent accessibility modifiers on class properties and methods.
-- Use `const` declarations for variables that are only assigned once.
-- Put default function parameters and optional function parameters last.
-- Include a `default` clause in switch statements.
-- Use the `**` operator instead of `Math.pow`.
-- Use `for-of` loops when you need the index to extract an item from the iterated array.
-- Use `node:assert/strict` over `node:assert`.
-- Use the `node:` protocol for Node.js builtin modules.
-- Use Number properties instead of global ones.
-- Use assignment operator shorthand where possible.
-- Use function types instead of object types with call signatures.
-- Use template literals over string concatenation.
-- Use `new` when throwing an error.
-- Don't throw non-Error values.
-- Use `String.trimStart()` and `String.trimEnd()` over `String.trimLeft()` and `String.trimRight()`.
-- Use standard constants instead of approximated literals.
-- Don't assign values in expressions.
-- Don't use async functions as Promise executors.
-- Don't reassign exceptions in catch clauses.
-- Don't reassign class members.
-- Don't compare against -0.
-- Don't use labeled statements that aren't loops.
-- Don't use void type outside of generic or return types.
-- Don't use console.
-- Don't use control characters and escape sequences that match control characters in regular expression literals.
-- Don't use debugger.
-- Don't assign directly to document.cookie.
-- Use `===` and `!==`.
-- Don't use duplicate case labels.
-- Don't use duplicate class members.
-- Don't use duplicate conditions in if-else-if chains.
-- Don't use two keys with the same name inside objects.
-- Don't use duplicate function parameter names.
-- Don't have duplicate hooks in describe blocks.
-- Don't use empty block statements and static blocks.
-- Don't let switch clauses fall through.
-- Don't reassign function declarations.
-- Don't allow assignments to native objects and read-only global variables.
-- Use Number.isFinite instead of global isFinite.
-- Use Number.isNaN instead of global isNaN.
-- Don't assign to imported bindings.
-- Don't use irregular whitespace characters.
-- Don't use labels that share a name with a variable.
-- Don't use characters made with multiple code points in character class syntax.
-- Make sure to use new and constructor properly.
-- Don't use shorthand assign when the variable appears on both sides.
-- Don't use octal escape sequences in string literals.
-- Don't use Object.prototype builtins directly.
-- Don't redeclare variables, functions, classes, and types in the same scope.
-- Don't have redundant "use strict".
-- Don't compare things where both sides are exactly the same.
-- Don't let identifiers shadow restricted names.
-- Don't use sparse arrays (arrays with holes).
-- Don't use template literal placeholder syntax in regular strings.
-- Don't use the then property.
-- Don't use unsafe negation.
-- Don't use var.
-- Don't use with statements in non-strict contexts.
-- Make sure async functions actually use await.
-- Make sure default clauses in switch statements come last.
-- Make sure to pass a message value when creating a built-in error.
-- Make sure get methods always return a value.
-- Use a recommended display strategy with Google Fonts.
-- Make sure for-in loops include an if statement.
-- Use Array.isArray() instead of instanceof Array.
-- Make sure to use the digits argument with Number#toFixed().
-- Make sure to use the "use strict" directive in script files.
+  try {
+    // Start transaction
+    session.startTransaction();
 
+    // Find book and check if it exists
+    const book = await Book.findById(bookId).session(session);
+    if (!book) {
+      throw new ApiError(404, 'Book not found');
+    }
 
-### Testing Best Practices
-- Don't use export or module.exports in test files.
-- Don't use focused tests.
-- Make sure the assertion function, like expect, is placed inside an it() function call.
-- Don't use disabled tests.
+    // Find user and check if they have enough funds
+    const user = await User.findById(userId).session(session);
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    if (user.balance < book.price) {
+      throw new ApiError(400, 'Insufficient funds');
+    }
+
+    // Update user balance
+    await User.findByIdAndUpdate(
+      userId,
+      { $inc: { balance: -book.price } },
+      { session }
+    );
+
+    // Add book to user's library
+    await UserLibrary.create([{
+      userId,
+      bookId,
+      purchaseDate: new Date()
+    }], { session });
+
+    // Commit transaction
+    await session.commitTransaction();
+  } catch (error) {
+    // Abort transaction on error
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    // End session
+    session.endSession();
+  }
+}
+```
+
+## Testing Best Practices
+
+- Write unit tests for all services and utility functions
+- Write integration tests for API endpoints
+- Test happy paths, edge cases, and error scenarios
+- Use a testing framework like Jest or Mocha
+- Use test doubles (mocks, stubs) for external dependencies
+- Keep tests independent and isolated
+- Use a separate test database
+- Clean up test data after each test
+
 
 ## Common Tasks
 - `npx ultracite init` - Initialize Ultracite in your project
 - `npx ultracite fix` - Format and fix code automatically
 - `npx ultracite check` - Check for issues without fixing
 
-## Example: Error Handling
-```typescript
-// ✅ Good: Comprehensive error handling
-try {
-  const result = await fetchData();
-  return { success: true, data: result };
-} catch (error) {
-  console.error('API call failed:', error);
-  return { success: false, error: error.message };
-}
 
-// ❌ Bad: Swallowing errors
-try {
-  return await fetchData();
-} catch (e) {
-  console.log(e);
-}
-```

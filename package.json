@@ -1,39 +1,58 @@
 {
   "name": "e-book-store",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "description": "A comprehensive e-book store backend API built with Node.js, Express, and TypeScript",
+  "main": "src/server.ts",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
+  },
   "scripts": {
-    "dev": "bun --hot  src/server.ts",
-    "debug": "tsnd --watch ./src --respawn -r tsconfig-paths/register --pretty --transpile-only ./src/server.ts  ",
-    "prettier": "prettier --write .",
-    "seed": "bun src/seeds/seed.ts",
-    "clean": "rm -rf node_modules",
-    "check": "bunx ultracite check",
-    "fix": "bunx ultracite fix"
+    "dev": "bun --hot src/server.ts",
+    "debug": "tsnd --watch ./src --respawn -r tsconfig-paths/register --pretty --transpile-only ./src/server.ts",
+    "clean": "rm -rf node_modules dist *.log",
+    "check": "bunx ultracite  check --vcs-use-ignore-file=true",
+    "fix": "bunx ultracite  check --vcs-use-ignore-file=true --write",
+    "preinstall": "npx only-allow bun"
   },
   "keywords": [
     "nodejs",
-    "express"
+    "express",
+    "typescript",
+    "mongodb",
+    "e-book",
+    "api",
+    "backend",
+    "bookstore"
   ],
   "author": "Sachin Thapa",
   "license": "ISC",
-  "description": " ",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sachinthapa572/EBookStore_Server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sachinthapa572/EBookStore_Server/issues"
+  },
+  "homepage": "https://github.com/sachinthapa572/EBookStore_Server#readme",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "csrf-csrf": "^4.0.3",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.4.1",
     "formidable": "^3.5.4",
     "helmet": "^8.1.0",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
+    "morgan": "^1.10.1",
     "nodemailer": "^7.0.6",
-    "nodemon": "^3.1.10",
     "slugify": "^1.6.6",
     "typescript": "^5.9.2",
     "uuid": "^13.0.0",
@@ -44,32 +63,29 @@
     "@biomejs/biome": "2.2.2",
     "@faker-js/faker": "^10.0.0",
     "@types/bcryptjs": "^3.0.0",
+    "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/express-rate-limit": "^6.0.0",
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.97",
-    "@types/morgan": "^1.9.10",
     "@types/node": "^24.5.0",
     "@types/nodemailer": "^7.0.1",
+    "@types/supertest": "^6.0.2",
     "@types/winston": "^2.4.4",
     "colorette": "^2.0.20",
-    "morgan": "^1.10.1",
+    "cross-env": "^7.0.3",
+    "only-allow": "^1.2.1",
     "prettier": "^3.6.2",
+    "supertest": "^7.0.0",
+    "ts-node-dev": "^2.0.0",
     "ultracite": "5.3.3",
     "winston-mongodb": "^7.0.1"
   },
   "peerDependencies": {
     "express": "^5.1.0",
     "mongoose": "^8.8.3"
-  },
-  "prettier": {
-    "singleQuote": false,
-    "bracketSpacing": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "semi": true,
-    "printWidth": 95
   }
 }
