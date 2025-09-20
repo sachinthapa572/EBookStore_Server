@@ -141,5 +141,40 @@ export const updateBookSchema = z.object({
 
 // pipe is used to apply multiple validation on the same field
 
+export const searchBooksSchema = z.object({
+  title: z
+    .string({
+      required_error: "Search title is required",
+      invalid_type_error: "Title must be a string",
+    })
+    .min(3, "Search query must be at least 3 characters long")
+    .trim(),
+  pageSize: z
+    .string({
+      invalid_type_error: "Page size must be a string",
+    })
+    .optional()
+    .transform((val) => {
+      if (!val) {
+        return "10";
+      }
+      const num = Number.parseInt(val, 10);
+      return Number.isNaN(num) ? "10" : Math.max(1, Math.min(100, num)).toString();
+    }),
+  pageNumber: z
+    .string({
+      invalid_type_error: "Page number must be a string",
+    })
+    .optional()
+    .transform((val) => {
+      if (!val) {
+        return "1";
+      }
+      const num = Number.parseInt(val, 10);
+      return Number.isNaN(num) ? "1" : Math.max(1, num).toString();
+    }),
+});
+
 export type NewBookType = z.infer<typeof newBookSchema>;
 export type UpdateBookType = z.infer<typeof updateBookSchema>;
+export type SearchBooksType = z.infer<typeof searchBooksSchema>;
