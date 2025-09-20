@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { checkout } from "@/controllers/checkout";
+import { checkout } from "@/controllers/checkout.controller";
 import { isAuth } from "@/middlewares/isAuth.middleware";
 import { paramValidator } from "@/middlewares/validator.middlewares";
 import { uuidGSchema } from "@/validators";

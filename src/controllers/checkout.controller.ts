@@ -9,6 +9,7 @@ import { appEnv } from "@/config/env";
 import { HttpStatusCode } from "@/constant";
 import type { BookDoc } from "@/model/Book/book.model";
 import CartModel from "@/model/cart/cart.model";
+import { OrderModel } from "@/model/order/order.model";
 import type { UuidGType } from "@/validators";
 
 export const stripe = new Stripe(appEnv.STRIPE_SECRET_KEY, {
@@ -19,7 +20,10 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
   async (req, res) => {
     const { cartId } = req.params;
 
-    const cart = await CartModel.findById(cartId).populate<{
+    const cart = await CartModel.findById({
+      _id: cartId,
+      user: req.user._id,
+    }).populate<{
       items: { product: BookDoc; quantity: number }[];
     }>({
       path: "items.product",
@@ -29,6 +33,18 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
       throw new ApiError(HttpStatusCode.NotFound, "Cart not found");
     }
 
+    const newOrder = await OrderModel.create({
+      userId: req.user._id,
+      orderItems: cart.items.map(({ product, quantity }) => {
+        return {
+          id: product._id,
+          price: product.price.sale,
+          qty: quantity,
+          totalPrice: product.price.sale * quantity,
+        };
+      }),
+    });
+
     let customer: Stripe.Customer;
     try {
       customer = await stripe.customers.create({
@@ -36,7 +52,7 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
         email: req.user.email,
         metadata: {
           userId: req.user._id.toString(),
-          cartId,
+          orderId: newOrder._id.toString(),
           type: "checkout",
         },
       });
