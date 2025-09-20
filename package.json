@@ -14,7 +14,8 @@
     "clean": "rm -rf node_modules dist *.log",
     "check": "bunx ultracite  check --vcs-use-ignore-file=true",
     "fix": "bunx ultracite  check --vcs-use-ignore-file=true --write",
-    "preinstall": "bun x only-allow bun"
+    "preinstall": "bun x only-allow bun",
+    "stripe": "stripe listen --forward-to localhost:3000/webhook"
   },
   "keywords": [
     "nodejs",
