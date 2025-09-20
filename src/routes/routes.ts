@@ -9,6 +9,7 @@ import booksRoute from "./Book/book.route";
 import cartRoute from "./Cart/cart.router";
 import checkoutRoute from "./checkout";
 import historyRoute from "./history/history.route";
+import orderRoute from "./order.route";
 import reviewRoute from "./Reviews/review.router";
 import { doubleCsrfProtection, HttpStatusCode } from "@/constant";
 import { ROLES } from "@/enum/role.enum";
@@ -23,6 +24,7 @@ routes.use("/cart", cartRoute);
 routes.use("/review", reviewRoute);
 routes.use("/history", historyRoute);
 routes.use("/checkout", checkoutRoute);
+routes.use("/order", orderRoute);
 
 // health check
 routes.get("/health", isAuth, doubleCsrfProtection, (req, res) => {
