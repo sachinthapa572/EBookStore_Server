@@ -1,7 +1,9 @@
+import type { Request } from "express";
 import type { ObjectId } from "mongoose";
 import slugify from "slugify";
 
 import { ApiError } from "@/utils/ApiError";
+import { formatUserProfile } from "@/utils/helper";
 
 import { HttpStatusCode } from "@/constant";
 import { ROLES } from "@/enum/role.enum";
@@ -18,7 +20,7 @@ export type AuthorData = {
 };
 
 export type AuthorRegistrationResult = {
-  slug: string;
+  user: Request["user"];
 };
 
 export type AuthorBooksData = {
@@ -27,6 +29,13 @@ export type AuthorBooksData = {
     title: string;
     slug: string;
     status: string;
+    genre: string;
+    price: {
+      mrp: string;
+      sale: string;
+    };
+    cover?: string;
+    rating?: string;
   }[];
 };
 
@@ -69,12 +78,30 @@ class AuthorService {
     await newAuthor.save();
 
     // Update the user's role and authorId
-    await UserModel.findByIdAndUpdate(userId, {
-      role: ROLES.AUTHOR,
-      authorId: newAuthor._id,
-    });
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        role: ROLES.AUTHOR,
+        authorId: newAuthor._id,
+      },
+      { new: true }
+    );
 
-    return { slug: newAuthor.slug };
+    if (!updatedUser) {
+      throw new ApiError(
+        HttpStatusCode.InternalServerError,
+        "Failed to update user with author information"
+      );
+    }
+
+    let userResult: Request["user"];
+    if (updatedUser) {
+      userResult = formatUserProfile(updatedUser);
+    } else {
+      userResult = {} as Request["user"];
+    }
+
+    return { user: userResult };
   }
 
   // Get author details by slug

@@ -148,7 +148,7 @@ class BookService {
       language,
       publicationName,
       publishedAt,
-      status: status as "published" | "unpublished",
+      status,
       copySold: 0,
       author: authorId,
       slug: slugify(`${title} ${authorId}`, {
@@ -200,8 +200,17 @@ class BookService {
     updateData: BookUpdateData,
     files: BookFiles
   ): Promise<BookUpdateResult> {
-    const { title, description, price, genre, language, publicationName, publishedAt, slug } =
-      updateData;
+    const {
+      title,
+      description,
+      price,
+      genre,
+      language,
+      publicationName,
+      publishedAt,
+      slug,
+      status,
+    } = updateData;
     const { cover, book: newBookFile } = files;
 
     // Find the book
@@ -225,6 +234,7 @@ class BookService {
       genre,
       publishedAt,
       price,
+      status,
     });
 
     // Update cover image
@@ -263,6 +273,11 @@ class BookService {
 
     // Save updated book
     const updatedBook = await book.save();
+
+    await UserModel.findByIdAndUpdate(authorId, {
+      $push: { books: updatedBook._id },
+    });
+
     const bookObject = updatedBook.toObject();
     const newBookResponse = {
       ...bookObject,
