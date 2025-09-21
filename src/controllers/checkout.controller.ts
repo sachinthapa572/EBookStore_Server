@@ -95,7 +95,7 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
           quantity,
           price_data: {
             currency: "usd",
-            unit_amount: Math.round(product.price.sale * 100),
+            unit_amount: product.price.sale,
             product_data: {
               name: product.title,
               //   ...images,
@@ -183,7 +183,7 @@ export const instantCheckout: CustomRequestHandler<{
       quantity: 1,
       price_data: {
         currency: "usd",
-        unit_amount: product.price.sale,
+        unit_amount: Math.round(product.price.sale * 100),
         product_data: {
           name: product.title,
           ...images,

@@ -95,11 +95,7 @@ class AuthorService {
     }
 
     let userResult: Request["user"];
-    if (updatedUser) {
-      userResult = formatUserProfile(updatedUser);
-    } else {
-      userResult = {} as Request["user"];
-    }
+    userResult = formatUserProfile(updatedUser);
 
     return { user: userResult };
   }
