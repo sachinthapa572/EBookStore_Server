@@ -274,8 +274,8 @@ class BookService {
     // Save updated book
     const updatedBook = await book.save();
 
-    await UserModel.findByIdAndUpdate(authorId, {
-      $push: { books: updatedBook._id },
+    await AuthorModel.findByIdAndUpdate(book.author, {
+      $addToSet: { books: updatedBook._id },
     });
 
     const bookObject = updatedBook.toObject();

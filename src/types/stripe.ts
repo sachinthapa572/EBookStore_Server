@@ -1,8 +1,10 @@
 export type AmountDetails = {
-  tip: Tip;
+  tip?: Tip | null;
 };
 
-export type Tip = Record<string, never>;
+export type Tip = {
+  amount: number;
+};
 
 export type Charges = {
   object: string;
@@ -49,7 +51,8 @@ export type PaymentMethod = {
   type: string;
 };
 
-export type StripeSuccessIntent = {
+// Base type containing all shared fields between success and failed intents
+export type BaseIntent = {
   id: string;
   object: string;
   amount: number;
@@ -70,13 +73,10 @@ export type StripeSuccessIntent = {
   customer: string;
   description: string | null;
   invoice: string | null;
-  last_payment_error: LastPaymentError | null;
-  latest_charge: string;
   livemode: boolean;
   metadata: Metadata;
   next_action: Record<string, unknown> | null;
   on_behalf_of: string | null;
-  payment_method: string;
   payment_method_configuration_details: Record<string, unknown> | null;
   payment_method_options: PaymentMethodOptions;
   payment_method_types: string[];
@@ -93,49 +93,22 @@ export type StripeSuccessIntent = {
   transfer_group: string | null;
 };
 
-export type StripeFailedIntent = {
-  id: string;
-  object: string;
-  amount: number;
-  amount_capturable: number;
-  amount_details: AmountDetails;
-  amount_received: number;
-  application: string | null;
-  application_fee_amount: number | null;
-  automatic_payment_methods: Record<string, unknown> | null;
-  canceled_at: number | null;
-  cancellation_reason: string | null;
-  capture_method: string;
-  charges: Charges;
-  client_secret: string;
-  confirmation_method: string;
-  created: number;
-  currency: string;
-  customer: string;
-  description: string | null;
-  invoice: string | null;
+// Success intent - extends BaseIntent with non-nullable fields
+export type StripeSuccessIntent = BaseIntent & {
+  last_payment_error: LastPaymentError | null;
+  latest_charge: string;
+  payment_method: string;
+};
+
+// Failed intent - extends BaseIntent with nullable fields
+export type StripeFailedIntent = BaseIntent & {
   last_payment_error: LastPaymentError;
   latest_charge: string | null;
-  livemode: boolean;
-  metadata: Metadata;
-  next_action: Record<string, unknown> | null;
-  on_behalf_of: string | null;
   payment_method: string | null;
-  payment_method_configuration_details: Record<string, unknown> | null;
-  payment_method_options: PaymentMethodOptions;
-  payment_method_types: string[];
-  processing: Record<string, unknown> | null;
-  receipt_email: string | null;
-  review: string | null;
-  setup_future_usage: string | null;
-  shipping: Record<string, unknown> | null;
-  source: Record<string, unknown> | null;
-  statement_descriptor: string | null;
-  statement_descriptor_suffix: string | null;
-  status: string;
-  transfer_data: Record<string, unknown> | null;
-  transfer_group: string | null;
 };
+
+// Discriminated union for better type safety
+export type StripeIntent = StripeSuccessIntent | StripeFailedIntent;
 
 export type StripeCustomer = {
   id: string;

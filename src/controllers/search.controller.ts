@@ -1,3 +1,4 @@
+import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler, type CustomRequestHandler } from "@/utils/asyncHandler";
 
@@ -18,7 +19,6 @@ type FormattedBooks = {
     sale: string;
   };
 };
-
 const formatBook = (book: BookDoc | AggregationResult): FormattedBooks => {
   const { _id, title, slug, genre, price, cover, avgRating } = book;
 
@@ -28,17 +28,25 @@ const formatBook = (book: BookDoc | AggregationResult): FormattedBooks => {
     slug,
     genre,
     price: {
-      mrp: (price.mrp / 100).toFixed(2),
-      sale: (price.sale / 100).toFixed(2),
+      mrp: price?.mrp ? (price.mrp / 100).toFixed(2) : "0.00",
+      sale: price?.sale ? (price.sale / 100).toFixed(2) : "0.00",
     },
     cover: cover?.url,
-    rating: avgRating?.toFixed(1),
+    rating: avgRating ? avgRating.toFixed(1) : undefined,
   };
 };
 
 export const searchBooks: CustomRequestHandler<object, object, SearchBooksType> = asyncHandler(
   async (req, res) => {
     const { title, pageSize, pageNumber } = req.query;
+
+    // Validate title parameter
+    if (!title || typeof title !== "string") {
+      throw new ApiError(
+        HttpStatusCode.BadRequest,
+        "Title parameter is required and must be a string"
+      );
+    }
 
     // Handle pagination
     const pagination = {

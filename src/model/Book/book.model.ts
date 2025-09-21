@@ -112,10 +112,16 @@ const bookSchema = new Schema<BookDoc>(
 );
 
 bookSchema.pre("save", function (next) {
-  const { mrp, sale } = this.price;
-  this.price = { mrp: mrp * 100, sale: sale * 100 };
+  if (
+    this.price &&
+    typeof this.price.mrp === "number" &&
+    typeof this.price.sale === "number"
+  ) {
+    const { mrp, sale } = this.price;
+    // Convert price from dollars to cents for storage
+    this.price = { mrp: mrp * 100, sale: sale * 100 };
+  }
 
   next();
 });
-
 export const BookModel = model<BookDoc>("Book", bookSchema) as Model<BookDoc>;

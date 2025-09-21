@@ -35,14 +35,17 @@ const orderSchema = new Schema<OrderDoc>(
         price: {
           type: Number,
           required: true,
+          min: [0, "Price must be non-negative"],
         },
         totalPrice: {
           type: Number,
           required: true,
+          min: [0, "Total price must be non-negative"],
         },
         qty: {
           type: Number,
           required: true,
+          min: [1, "Quantity must be at least 1"],
         },
       },
     ],
@@ -54,6 +57,7 @@ const orderSchema = new Schema<OrderDoc>(
     },
     totalAmount: {
       type: Number,
+      min: 0,
     },
     paymentStatus: {
       type: String,

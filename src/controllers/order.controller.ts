@@ -77,7 +77,7 @@ export const getOrders: CustomRequestHandler = asyncHandler(async (req, res) => 
   );
 });
 
-export const getOrderStatus: CustomRequestHandler<
+export const checkBookOwnership: CustomRequestHandler<
   object,
   UuidGType<["bookId"]>
 > = asyncHandler(async (req, res) => {
@@ -99,7 +99,7 @@ export const getOrderStatus: CustomRequestHandler<
 export const getOrderSuccessStatus: CustomRequestHandler<
   object,
   UuidGType<["sessionId"]>
-> = async (req, res) => {
+> = asyncHandler(async (req, res) => {
   const { sessionId } = req.params;
 
   const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -108,9 +108,16 @@ export const getOrderSuccessStatus: CustomRequestHandler<
   let customer: StripeCustomer;
 
   if (typeof customerId === "string") {
-    customer = (await stripe.customers.retrieve(customerId)) as unknown as StripeCustomer;
+    const stripeCustomer = await stripe.customers.retrieve(customerId);
+    if (!stripeCustomer || stripeCustomer.deleted) {
+      throw new ApiError(HttpStatusCode.NotFound, "Customer not found");
+    }
+    customer = stripeCustomer as unknown as StripeCustomer;
 
     const { orderId } = customer.metadata;
+    if (!orderId) {
+      throw new ApiError(HttpStatusCode.BadRequest, "Order ID not found in customer metadata");
+    }
     const order = await OrderModel.findById(orderId).populate<{
       orderItems: {
         id: BookDoc;
@@ -146,7 +153,7 @@ export const getOrderSuccessStatus: CustomRequestHandler<
         "Order fetched successfully"
       )
     );
+  } else {
+    throw new ApiError(HttpStatusCode.NotFound, "Customer not found");
   }
-
-  throw new ApiError(HttpStatusCode.NotFound, "Customer not found");
-};
+});

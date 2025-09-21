@@ -95,7 +95,7 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
           quantity,
           price_data: {
             currency: "usd",
-            unit_amount: product.price.sale,
+            unit_amount: Math.round(product.price.sale * 100),
             product_data: {
               name: product.title,
               //   ...images,
@@ -125,7 +125,7 @@ export const checkout: CustomRequestHandler<object, UuidGType<["cartId"]>> = asy
     } catch (e) {
       if (e instanceof Stripe.errors.StripeError) {
         logger.error(`Stripe error: ${req.user._id}`, e);
-        throw new ApiError(HttpStatusCode.InternalServerError, e.message);
+        throw new ApiError(HttpStatusCode.InternalServerError, "Stripe service error");
       }
       throw new ApiError(
         HttpStatusCode.InternalServerError,
@@ -192,18 +192,32 @@ export const instantCheckout: CustomRequestHandler<{
     },
   ];
 
-  const session = await generateStripeCheckoutSession({ customer, line_items });
-  if (session.url) {
-    res
-      .status(HttpStatusCode.OK)
-      .json(
-        new ApiResponse(
-          HttpStatusCode.OK,
-          { checkoutUrl: session.url },
-          "Checkout session created"
-        )
+  try {
+    const session = await generateStripeCheckoutSession({ customer, line_items });
+
+    if (session.url) {
+      res
+        .status(HttpStatusCode.OK)
+        .json(
+          new ApiResponse(
+            HttpStatusCode.OK,
+            { checkoutUrl: session.url },
+            "Checkout session created"
+          )
+        );
+    } else {
+      throw new ApiError(
+        HttpStatusCode.InternalServerError,
+        "Failed to create checkout session"
       );
-  } else {
+    }
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeError) {
+      logger.error(`Stripe error during instant checkout: ${req.user._id}`, error);
+      throw new ApiError(HttpStatusCode.InternalServerError, "Stripe service error");
+    }
+
+    logger.error(`Error during instant checkout: ${req.user._id}`, error);
     throw new ApiError(
       HttpStatusCode.InternalServerError,
       "Failed to create checkout session"

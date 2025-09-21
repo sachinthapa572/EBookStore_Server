@@ -40,13 +40,22 @@ export const handlePayment: RequestHandler = async (req, _res) => {
 
       const { orderId, type, userId } = customer.metadata;
 
-      const order = await OrderModel.findByIdAndUpdate(orderId, {
-        stripeCustomerId: customerId,
-        paymentId: stripeSession.id,
-        totalAmount: stripeSession.amount_received,
-        paymentStatus: stripeSession.status,
-        paymentErrorMessage: stripeSession.last_payment_error?.message,
-      });
+      const order = await OrderModel.findByIdAndUpdate(
+        orderId,
+        {
+          stripeCustomerId: customerId,
+          paymentId: stripeSession.id,
+          totalAmount: stripeSession.amount_received,
+          paymentStatus: stripeSession.status,
+          paymentErrorMessage: stripeSession.last_payment_error?.message,
+        },
+        { new: true }
+      );
+
+      if (!order) {
+        logger.error("Order not found for update", { orderId });
+        return;
+      }
 
       const bookIds =
         order?.orderItems.map((item) => {
