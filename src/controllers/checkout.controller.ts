@@ -29,8 +29,8 @@ const generateStripeCheckoutSession = async (options: Toptions) => {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
-    success_url: process.env.PAYMENT_SUCCESS_URL,
-    cancel_url: process.env.PAYMENT_CANCEL_URL,
+    success_url: appEnv.PAYMENT_SUCCESS_URL,
+    cancel_url: appEnv.PAYMENT_CANCEL_URL,
     line_items: options.line_items,
     customer: customer.id,
   });
