@@ -12,12 +12,21 @@ import {
   getFeaturedBooks,
   updateBookDetails,
 } from "@/controllers/book/book.controller";
+import { searchBooks } from "@/controllers/search.controller";
 import { fileParser } from "@/middlewares/file.middelware";
 import { isAuth } from "@/middlewares/isAuth.middleware";
 import { isAuthor } from "@/middlewares/isAuthor.middleware";
-import { paramValidator, validator } from "@/middlewares/validator.middlewares";
+import {
+  paramValidator,
+  queryValidator,
+  validator,
+} from "@/middlewares/validator.middlewares";
 import { uuidGSchema } from "@/validators";
-import { newBookSchema, updateBookSchema } from "@/validators/book/book.validation";
+import {
+  newBookSchema,
+  searchBooksSchema,
+  updateBookSchema,
+} from "@/validators/book/book.validation";
 
 const booksRoute = Router();
 
@@ -64,5 +73,7 @@ booksRoute.get("/access/:slug", paramValidator(uuidGSchema("slug")), generateBoo
 // delete the book
 
 booksRoute.delete("/:bookId", paramValidator(uuidGSchema("bookId")), isAuthor, deleteBook);
+
+booksRoute.get("/search/books", queryValidator(searchBooksSchema), searchBooks);
 
 export default booksRoute;

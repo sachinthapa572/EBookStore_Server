@@ -17,7 +17,7 @@ export type BookCreationData = {
   };
   publicationName: string;
   publishedAt: Date;
-  status: string;
+  status: "published" | "unpublished";
 };
 
 export type BookUpdateData = {
@@ -32,6 +32,7 @@ export type BookUpdateData = {
   publicationName?: string;
   publishedAt?: Date;
   slug: string;
+  status?: "published" | "unpublished";
 };
 
 export type BookFiles = {

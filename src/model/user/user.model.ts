@@ -21,6 +21,7 @@ export type userDoc = {
   save: () => Promise<userDoc>;
   authorId?: ObjectId;
   books: ObjectId[];
+  orders?: ObjectId[];
 };
 
 type Methods = {
@@ -76,6 +77,12 @@ const userSchema = new Schema<userDoc, Record<string, unknown>, Methods>(
       {
         type: Schema.Types.ObjectId,
         ref: "Book",
+      },
+    ],
+    orders: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Order",
       },
     ],
   },

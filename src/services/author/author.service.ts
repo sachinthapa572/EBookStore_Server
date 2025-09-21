@@ -1,7 +1,9 @@
+import type { Request } from "express";
 import type { ObjectId } from "mongoose";
 import slugify from "slugify";
 
 import { ApiError } from "@/utils/ApiError";
+import { formatUserProfile } from "@/utils/helper";
 
 import { HttpStatusCode } from "@/constant";
 import { ROLES } from "@/enum/role.enum";
@@ -18,7 +20,7 @@ export type AuthorData = {
 };
 
 export type AuthorRegistrationResult = {
-  slug: string;
+  user: Request["user"];
 };
 
 export type AuthorBooksData = {
@@ -27,6 +29,13 @@ export type AuthorBooksData = {
     title: string;
     slug: string;
     status: string;
+    genre: string;
+    price: {
+      mrp: string;
+      sale: string;
+    };
+    cover?: string;
+    rating?: string;
   }[];
 };
 
@@ -69,26 +78,34 @@ class AuthorService {
     await newAuthor.save();
 
     // Update the user's role and authorId
-    await UserModel.findByIdAndUpdate(userId, {
-      role: ROLES.AUTHOR,
-      authorId: newAuthor._id,
-    });
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        role: ROLES.AUTHOR,
+        authorId: newAuthor._id,
+      },
+      { new: true }
+    );
 
-    return { slug: newAuthor.slug };
-  }
-
-  // Get author details by slug
-  async getAuthorDetails(authorSlug: string): Promise<AuthorData> {
-    // Check if author slug is provided
-    if (!authorSlug) {
+    if (!updatedUser) {
       throw new ApiError(
-        HttpStatusCode.BadRequest,
-        "Author identifier is required. Please provide a valid author slug."
+        HttpStatusCode.InternalServerError,
+        "Failed to update user with author information"
       );
     }
 
+    let userResult: Request["user"];
+    userResult = formatUserProfile(updatedUser);
+
+    return { user: userResult };
+  }
+
+  // Get author details by slug
+  async getAuthorDetails(authorId: string): Promise<AuthorData> {
     // Fetch the author
-    const author = await AuthorModel.findOne({ slug: authorSlug });
+    const author = await AuthorModel.findById(authorId).populate<{ books: BookDoc[] }>(
+      "books"
+    );
     if (!author) {
       throw new ApiError(
         HttpStatusCode.NotFound,
@@ -129,6 +146,13 @@ class AuthorService {
         title: book.title,
         slug: book.slug,
         status: book.status,
+        genre: book.genre,
+        price: {
+          mrp: (book.price.mrp / 100).toFixed(2),
+          sale: (book.price.sale / 100).toFixed(2),
+        },
+        cover: book.cover?.url,
+        rating: book.avgRating?.toFixed(1),
       })),
     };
   }

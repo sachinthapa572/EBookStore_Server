@@ -2,6 +2,7 @@ import morgan from "morgan";
 import type winston from "winston";
 
 import logger from "./winston.logger";
+import { appEnv } from "@/config/env";
 
 type Stream = {
   write: (message: string) => winston.Logger;
@@ -13,7 +14,7 @@ const stream: Stream = {
 };
 
 const skip = () => {
-  const env = process.env.NODE_ENV || "development";
+  const env = appEnv.NODE_ENV || "development";
   return env !== "development";
 };
 

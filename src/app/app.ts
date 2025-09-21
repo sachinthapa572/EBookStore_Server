@@ -10,8 +10,12 @@ import { globalErrHandler, notFoundErr } from "@/middlewares/globalErrHandler.mi
 import { isAuth, isValidReadingRequest } from "@/middlewares/isAuth.middleware";
 import { refreshTokenMiddleware } from "@/middlewares/refreshToken.middleware";
 import routes from "@/routes/routes";
+import webhookRouter from "@/routes/webhook";
 
 const app: Express = express();
+
+// stripe webhook route
+app.use("/webhook", webhookRouter);
 
 // Global middlewares
 app.use(

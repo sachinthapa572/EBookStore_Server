@@ -72,7 +72,7 @@ export const csrfOptions: DoubleCsrfConfigOptions = {
   },
 };
 
-if (process.env.NODE_ENV === "production" && csrfOptions.cookieOptions) {
+if (appEnv.NODE_ENV === "production" && csrfOptions.cookieOptions) {
   csrfOptions.cookieOptions.secure = true;
 }
 

@@ -11,6 +11,7 @@ const formatUserProfile = (user: userDoc): Request["user"] => {
     username: user.username,
     signedUp: user.signedUp,
     authorId: user?.authorId,
+    books: user.books,
   };
 };
 

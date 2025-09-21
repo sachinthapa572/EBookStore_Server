@@ -59,6 +59,20 @@ const envSchema = z.object({
     required_error: "CLOUD_API_SECRET is required",
   }),
 
+  //   Stripe settings
+  STRIPE_SECRET_KEY: z.string({
+    required_error: "STRIPE_SECRET_KEY is required",
+  }),
+  PAYMENT_SUCCESS_URL: z.string({
+    required_error: "PAYMENT_SUCCESS_URL is required",
+  }),
+  PAYMENT_CANCEL_URL: z.string({
+    required_error: "PAYMENT_CANCEL_URL is required",
+  }),
+  STRIPE_WEBHOOK_SECRET: z.string({
+    required_error: "STRIPE_WEBHOOK_SECRET is required",
+  }),
+
   // File storage settings
   // UPLOADTHING_API_KEY: z.string({
   //     required_error: "UPLOADTHING_API_KEY is required",
